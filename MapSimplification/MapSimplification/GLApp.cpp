@@ -26,7 +26,6 @@ namespace
 	GLApp* g_pApp = NULL;
 }
 
-
 // Callback functions
 void RenderCallback()
 {
@@ -83,8 +82,8 @@ GLApp::GLApp(void)
 	m_FPS = 0.0f;
 
 
-	m_width = 800;
-	m_height = 600;
+	m_width = 1024;
+	m_height = 768;
 
 	g_pApp = this;
 }
@@ -127,9 +126,6 @@ bool GLApp::Init()
 {
 	if(!InitGL())
 		return false;
-
-//	if(!SetupShadowMapping())
-//		return false;
 
 	// Calculate timing
 	m_prevTime = 0;

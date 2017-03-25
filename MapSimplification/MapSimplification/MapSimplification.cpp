@@ -28,16 +28,17 @@ bool MapSimplification::Init()
 	// Anti-aliasing can be enabled by uncommenting the following 4 lines.
 	// This can however cause problems on some graphics cards.
 	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POINT_SMOOTH);
 	glEnable(GL_POLYGON_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
 	// Enable depth testing.
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
 
-	glEnable(GL_CULL_FACE);
-
+	//glEnable(GL_CULL_FACE);
 
 	// Normalize normals.2
 	glEnable(GL_NORMALIZE);
@@ -65,7 +66,7 @@ void MapSimplification::SetView()
 	glLoadIdentity();
 
 	// Background color.
-	glClearColor(0.85, 0.85, 1, 0);
+	glClearColor(0.6, 0.6, 0.6, 0);
 
 
 	// Clear background.
@@ -86,44 +87,47 @@ void MapSimplification::SetView()
 void MapSimplification::DrawBackground()
 {
 	// Background properties
-	float innerColor[] = {1,1,1};
-	float outerColor[] = {0.6, 0.6, 0.6};
-	int slices = 50;
-	float radius = 1.5;
-	float incr = (float) (2 * M_PI / slices);
+	//float innerColor[] = {1,1,1};
+	//float outerColor[] = {0.6, 0.6, 0.6};
+	//int slices = 50;
+	//float radius = 1.5;
+	//float incr = (float) (2 * M_PI / slices);
 
-	// Switch to 2D mode
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	//// Switch to 2D mode
+	//glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_LIGHTING);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
 
-	// Draw background gradient
-	glBegin(GL_TRIANGLE_FAN);
+	//// Draw background gradient
+	//glBegin(GL_QUADS);
 
-		glColor3fv(innerColor);
-		glVertex2f(0.0f, 0.0f);
+	//	//glColor3fv(innerColor);
+	//	glVertex2f(-1.0f, -1.0f);
+	//	glVertex2f(1.0f, -1.0f);
+	//	glVertex2f(-1.0f, 1.0f);
+	//	glVertex2f(1.0f, 1.0f);
 
-		glColor3fv(outerColor);
+	//	//glColor3fv(outerColor);
 
-		for(int i = 0; i < slices; i++)
-		{
-			float angle = incr * i;
+	//	//for(int i = 0; i < slices; i++)
+	//	//{
+	//	//	float angle = incr * i;
 
-			float x = (float) cos(angle) * radius;
-			float y = (float) sin(angle) * radius;
+	//	//	float x = (float) cos(angle) * radius;
+	//	//	float y = (float) sin(angle) * radius;
 
-			glVertex2f(x, y);
-		}
+	//	//	glVertex2f(x, y);
+	//	//}
 
-		glVertex2f(radius, 0.0f);
+	//	//glVertex2f(radius, 0.0f);
 
-	glEnd();
+	//glEnd();
 
-	// Set projection matrix.
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	//// Set projection matrix.
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
 }
 
 
@@ -132,14 +136,98 @@ void MapSimplification::DrawBackground()
 */
 void MapSimplification::DrawScene()
 {
+	int midX = m_width * 0.5;
+
+	glColor3f(0, 0, 0);
+
+	// Draw original and simplified map
+	glPushMatrix();
+	{
+		DrawOriginalPanel();
+	}
+	glPopMatrix();
+
+	glPushMatrix();
+	{
+		glTranslatef(midX, 0, 0);
+		DrawSimplifiedPanel();
+	}
+	glPopMatrix();
+
+	// Draw divider
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_LINE_STRIP);
+		glVertex2f(midX, 0);
+		glVertex2f(midX, m_height);
+	glEnd();
+
+}
+
+
+/**
+* Draws the original map
+*/
+void MapSimplification::DrawOriginalPanel()
+{
+	glColor3f(1.0, 1.0, 1.0);
+	DrawString("Original", GLUT_BITMAP_8_BY_13, 25, 25);
 	// TODO: Draw polygons
 	glLineWidth(2.5);
-	glColor3f(0.0, 0.0, 0.0);
+	glPointSize(6.0);
+	
+
+	// Draw polygons
+	glColor3f(0.2, 0.2, 0.2);
 	glBegin(GL_LINE_STRIP);
+
 		glVertex2f(100, 100);
-		glVertex2f(350, 300);
+		glVertex2f(250, 300);
 		glVertex2f(500, 200);
-		glVertex2f(750, 400);
+		glVertex2f(480, 320);
+		glVertex2f(550, 400);
+
+	glEnd();
+
+	// Draw point set
+	glColor3f(1.0, 1.0, 0.4);
+	glBegin(GL_POINTS);
+		glVertex2f(105, 120);
+		glVertex2f(330, 210);
+		glVertex2f(460, 290);
+	glEnd();
+}
+
+/**
+* Draws the simplified map
+*/
+void MapSimplification::DrawSimplifiedPanel()
+{
+	glColor3f(1.0, 1.0, 1.0);
+	DrawString("Simplified", GLUT_BITMAP_8_BY_13, 25, 25);
+	// TODO: Draw polygons
+	glLineWidth(2.5);
+	glPointSize(6.0);
+	glColor3f(0.4, 0.4, 1.0);
+
+	// Draw polygons
+	glColor3f(0.2, 0.2, 0.2);
+	glBegin(GL_LINE_STRIP);
+	{
+		glVertex2f(100, 100);
+		glVertex2f(250, 300);
+		glVertex2f(500, 200);
+		glVertex2f(550, 400);
+	}
+	glEnd();
+
+	// Draw point set
+	glColor3f(1.0, 1.0, 0.4);
+	glBegin(GL_POINTS);
+	{
+		glVertex2f(105, 120);
+		glVertex2f(330, 210);
+		glVertex2f(460, 290);
+	}
 	glEnd();
 }
 
@@ -158,7 +246,7 @@ void MapSimplification::DrawGUI()
 	glColor3f(0.2, 0.2, 0.2);
 
 	// Draw menu hint
-	DrawString("Open menu by clicking the Right Mouse Button", GLUT_BITMAP_8_BY_13, 25, 25);
+	DrawString("Open menu by clicking the Right Mouse Button", GLUT_BITMAP_8_BY_13, 25, m_height - 25);
 }
 
 /**

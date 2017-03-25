@@ -20,6 +20,8 @@ public:
 	void DrawGUI() override;
 	void DrawBackground();
 
+	void DrawOriginalPanel();
+	void DrawSimplifiedPanel();
 
 private:
 	glm::vec2 center;
