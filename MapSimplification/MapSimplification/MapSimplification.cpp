@@ -39,8 +39,14 @@ bool MapSimplification::Init()
 	glEnable(GL_CULL_FACE);
 
 
-	// Normalize normals.
+	// Normalize normals.2
 	glEnable(GL_NORMALIZE);
+
+
+	Parser parser;
+
+	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
+	vector<glm::vec2> points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
 
 	return true;
 }

@@ -1,4 +1,5 @@
 #include "GLApp.h"
+#include "Parser.h"
 #include <ctime>
 
 class MapSimplification : public GLApp
