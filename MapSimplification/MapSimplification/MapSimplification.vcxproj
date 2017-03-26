@@ -124,12 +124,14 @@
     <ClInclude Include="GLUtil.h" />
     <ClInclude Include="MapSimplification.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="TrajectoryPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GLApp.cpp" />
     <ClCompile Include="GLUtil.cpp" />
     <ClCompile Include="MapSimplification.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="TrajectoryPanel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

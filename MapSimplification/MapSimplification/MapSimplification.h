@@ -26,5 +26,8 @@ public:
 private:
 	glm::vec2 center;
 	glm::vec2 camPos;
+
+	vector<vector<glm::vec2>> m_lines;
+	vector<glm::vec2> m_points;
 	
 };
