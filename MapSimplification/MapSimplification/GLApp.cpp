@@ -81,7 +81,6 @@ GLApp::GLApp(void)
 {
 	m_FPS = 0.0f;
 
-
 	m_width = 1024;
 	m_height = 768;
 
@@ -181,28 +180,39 @@ void GLApp::HandleMouseInput(int button, int state, int x, int y)
 */
 void GLApp::HandleMouseMotionInput(int x, int y)
 {
-	//std::cout << "mouseinput (x:" << x << ", y: " << y <<")\n";
+	if (mouseButton == GLUT_LEFT_BUTTON)
+	{
+		float dX = x - dragSourceX;
+		float dY = y - dragSourceY;
 
-	float dX = x - dragSourceX;
-	float dY = y - dragSourceY;
-		
-	// TODO: handle mouse input
-	m_topleft += glm::vec2(dX, dY);
+		// TODO: handle mouse input
+		m_topleft += glm::vec2(dX, dY);
 
-	//m_topleft.x = max(m_topleft.x, 0);
-	//m_topleft.y = max(m_topleft.y, 0);
-	
-		
-	dragSourceX = x;
-	dragSourceY = y;
+		//m_topleft.x = max(m_topleft.x, 0);
+		//m_topleft.y = max(m_topleft.y, 0);
+
+		dragSourceX = x;
+		dragSourceY = y;
+	}
 }
 
 void GLApp::HandleMouseWheelInput(int button, int dir, int x, int y)
 {
 	//std::cout << "mouseWheelinput (x:" << x << ", y: " << y <<")\n";
-	m_zoom = (float) max(MIN_CAMERA_ZOOM,
-							m_zoom *
-							pow(MOUSE_WHEEL_FACTOR, dir));
+	//m_topleft = glm::vec2(
+	//	m_topleft.x + ((x / (m_width * 0.5)) * dir * pow(MOUSE_WHEEL_FACTOR, dir)),
+	//	m_topleft.y + ((y / m_height) * dir * pow(MOUSE_WHEEL_FACTOR, dir))
+	//);
+
+	//m_topleft = glm::vec2(
+	//	m_topleft.x + (1/ m_width) * dir,
+	//	m_topleft.y + (1 / m_height) * -dir
+	//);
+	
+
+	m_zoom = (float)max(MIN_CAMERA_ZOOM,
+		m_zoom *
+		pow(MOUSE_WHEEL_FACTOR, dir));
 }
 
 void GLApp::HandleKeyboardInput(unsigned char key, int x, int y)
@@ -236,17 +246,8 @@ void GLApp::Reshape(int width, int height)
 // Create context menu
 void GLApp::InitMenu()
 {
-	// Dataset selection submenu
-	int datasetmenu = glutCreateMenu(HandleItemMenuInputCallback);
-	glutAddMenuEntry("training data 1", 40);
-	glutAddMenuEntry("training data 2", 41);
-	glutAddMenuEntry("training data 3", 42);
-	glutAddMenuEntry("training data 4", 43);
-	glutAddMenuEntry("training data 5", 44);
-	
 	// Main menu
 	m_menuId = glutCreateMenu(HandleItemMenuInputCallback);
-	glutAddSubMenu("Dataset", datasetmenu);
 	glutAddMenuEntry("Reset", 0);
 }
 
@@ -256,24 +257,8 @@ void GLApp::HandleItemMenuInput(int menuItemNumber)
 	switch (menuItemNumber)
 	{
 	case 0:	// Reset
-		
-		break;
-
-	// Dataset selection
-	case 40:	// Training data 1
-		// TODO: switch dataset
-		break;
-	case 41:	// Training data 2
-		// TODO: switch dataset
-		break;
-	case 42:	// Training data 3
-		// TODO: switch dataset
-		break;
-	case 43:	// Training data 4
-		// TODO: switch dataset
-		break;
-	case 44:	// Training data 5
-		// TODO: switch dataset
+		m_zoom = MIN_CAMERA_ZOOM;
+		m_topleft = glm::vec2(0);
 		break;
 
 	default:

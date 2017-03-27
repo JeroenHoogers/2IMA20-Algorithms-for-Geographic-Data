@@ -29,5 +29,7 @@ private:
 
 	vector<vector<glm::vec2>> m_lines;
 	vector<glm::vec2> m_points;
-	
+
+	glm::vec2 m_min;
+	glm::vec2 m_max;
 };

@@ -46,8 +46,26 @@ bool MapSimplification::Init()
 
 	Parser parser;
 
-	m_lines = parser.ParseLineFile("Data\\training_data1\\lines_out.txt");
-	m_points = parser.ParsePointFile("Data\\training_data1\\points_out.txt");
+	m_lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
+	m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
+
+	// Obtain min and max coordinates
+	m_min = glm::vec2(FLT_MAX);
+	m_max = glm::vec2(-FLT_MAX);
+
+	for each (vector<glm::vec2> line in m_lines)
+	{
+		for each (glm::vec2 vert in line)
+		{
+			// Store min coords
+			if (m_min.x > vert.x) m_min.x = vert.x;
+			if (m_min.y > vert.y) m_min.y = vert.y;
+
+			// Store max coords
+			if (m_max.x < vert.x) m_max.x = vert.x;
+			if (m_max.y < vert.y) m_max.y = vert.y;
+		}
+	}
 
 	return true;
 }
@@ -156,6 +174,7 @@ void MapSimplification::DrawScene()
 		glScissor(m_width * 0.5, 0, m_width, m_height);
 		glTranslatef(midX, 0, 0);
 		DrawOriginalPanel();
+		//DrawSimplifiedPanel();
 		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
@@ -178,38 +197,16 @@ void MapSimplification::DrawScene()
 */
 void MapSimplification::DrawOriginalPanel()
 {
-	// TODO: Draw polygons
+	// Set line and point sizes
 	glLineWidth(2.5);
 	glPointSize(6.0);
 
-
-
-
 	// Draw polygons
-	
-
-	// Obtain min and max coordinates
-	glm::vec2 min = glm::vec2(FLT_MAX);
-	glm::vec2 max = glm::vec2(-FLT_MAX);
-
-	for each (vector<glm::vec2> line in m_lines)
-	{
-		for each (glm::vec2 vert in line)
-		{
-			// Store min coords
-			if (min.x > vert.x) min.x = vert.x;
-			if (min.y > vert.y) min.y = vert.y;
-
-			// Store max coords
-			if (max.x < vert.x) max.x = vert.x;
-			if (max.y < vert.y) max.y = vert.y;
-		}
-	}
 
 	// calculate scale
 //	float panelRatio = (m_width * 0.5) / m_height;
 	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5 - 20, (float)m_height - 20);
-	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(max.x, 0), glm::vec2(min.x, 0)), glm::distance(max.y, min.y));
+	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
 	glm::vec2 ratio = panelDims / pointDims;
 
 	float scale = (ratio.x < ratio.y) ? ratio.x : ratio.y;
@@ -221,16 +218,15 @@ void MapSimplification::DrawOriginalPanel()
 
 		// Draw points
 		glScalef(scale * m_zoom, -scale * m_zoom, 0);
-		glTranslatef(-min.x, -min.y - pointDims.y, 0);
-		
+		glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
 		
 		glColor3f(0.2, 0.2, 0.2);
+		
 		// Draw lines
-		int i = 1;
 		for each (vector<glm::vec2> line in m_lines)
 		{
-			float col = ((float)i / (float)m_lines.size());
-			glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
+			//float col = ((float)i / (float)m_lines.size());
+			//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
 
 			// Draw line
 			glBegin(GL_LINE_STRIP);
@@ -240,22 +236,14 @@ void MapSimplification::DrawOriginalPanel()
 			}
 			glEnd();
 
-
-			//glColor3f(1.0, 1.0, 0.4);
-
 			// Draw points
 			glBegin(GL_POINTS);
-
 				glVertex2f(line[0].x, line[0].y);
 				glVertex2f(line[line.size()-1].x, line[line.size()-1].y);
 			glEnd();
-
-			i++;
-
 		}
 
-
-		glColor3f(1.0, 1.0, 0.4);
+		glColor3f(0.4, 1.0, 0.4);
 
 		// Draw points
 		glBegin(GL_POINTS);
@@ -263,46 +251,12 @@ void MapSimplification::DrawOriginalPanel()
 		{
 			glVertex2f(vert.x, vert.y);
 		}
-		glColor3f(1.0, 0.4, 0.4);
 		glEnd();
 
 	glPopMatrix();
-	//glVertex2f(100, 100);
-	//glVertex2f(250, 300);
-	//glVertex2f(500, 200);
-	//glVertex2f(480, 320);
-	//glVertex2f(550, 400);
-
-	
-
-	// Draw point set
-
-	//glBegin(GL_POINTS);
-	//	glVertex2f(105, 120);
-	//	glVertex2f(330, 210);
-	//	glVertex2f(460, 290);
-
-
-
-	//glEnd();
-
-	//min = glm::vec2(FLT_MAX);
-	//max = glm::vec2(FLT_MIN);
-
-	//for each (glm::vec2 vert in m_points)
-	//{
-	//	// Store min coords
-	//	if (min.x > vert.x) min.x = vert.x;
-	//	if (min.y > vert.y) min.y = vert.y;
-
-	//	// Store max coords
-	//	if (max.x < vert.x) max.x = vert.x;
-	//	if (max.y < vert.y) max.y = vert.y;
-	//}
-
 
 	glColor3f(1.0, 1.0, 1.0);
-	DrawString("Original", GLUT_BITMAP_8_BY_13, 25, 25);
+	DrawString("Original", GLUT_BITMAP_9_BY_15, 25, 25);
 }
 
 /**
@@ -310,33 +264,72 @@ void MapSimplification::DrawOriginalPanel()
 */
 void MapSimplification::DrawSimplifiedPanel()
 {
-	glColor3f(1.0, 1.0, 1.0);
-	DrawString("Simplified", GLUT_BITMAP_8_BY_13, 25, 25);
-	// TODO: Draw polygons
+	// Set line and point sizes
 	glLineWidth(2.5);
 	glPointSize(6.0);
-	glColor3f(0.4, 0.4, 1.0);
 
 	// Draw polygons
+
+	// calculate scale
+	//	float panelRatio = (m_width * 0.5) / m_height;
+	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5, (float)m_height);
+	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
+	glm::vec2 ratio = panelDims / pointDims;
+
+	float scale = (ratio.x < ratio.y) ? ratio.x : ratio.y;
+
+	glPushMatrix();
+	// padding
+	//glTranslatef(10, 10, 0);
+	glTranslatef(m_topleft.x * 0.5, m_topleft.y * 0.5, 0);
+
+	// Draw points
+	glScalef(scale * m_zoom, -scale * m_zoom, 0);
+	glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
+
 	glColor3f(0.2, 0.2, 0.2);
-	glBegin(GL_LINE_STRIP);
+
+	// Draw lines
+	for each (vector<glm::vec2> line in m_lines)
 	{
-		glVertex2f(100, 100);
-		glVertex2f(250, 300);
-		glVertex2f(500, 200);
-		glVertex2f(550, 400);
+		//float col = ((float)i / (float)m_lines.size());
+		//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
+
+		// Draw line
+		glBegin(GL_LINE_STRIP);
+		for each (glm::vec2 vert in line)
+		{
+			glVertex2f(vert.x, vert.y);
+		}
+		glEnd();
+
+
+		//glColor3f(1.0, 1.0, 0.4);
+
+		// Draw points
+		glBegin(GL_POINTS);
+
+		glVertex2f(line[0].x, line[0].y);
+		glVertex2f(line[line.size() - 1].x, line[line.size() - 1].y);
+		glEnd();
 	}
+
+
+	glColor3f(1.0, 1.0, 0.4);
+
+	// Draw points
+	glBegin(GL_POINTS);
+	for each (glm::vec2 vert in m_points)
+	{
+		glVertex2f(vert.x, vert.y);
+	}
+	glColor3f(1.0, 0.4, 0.4);
 	glEnd();
 
-	// Draw point set
-	glColor3f(1.0, 1.0, 0.4);
-	glBegin(GL_POINTS);
-	{
-		glVertex2f(105, 120);
-		glVertex2f(330, 210);
-		glVertex2f(460, 290);
-	}
-	glEnd();
+	glPopMatrix();
+
+	glColor3f(1.0, 1.0, 1.0);
+	DrawString("Simplified", GLUT_BITMAP_8_BY_13, 25, 25);
 }
 
 /**
