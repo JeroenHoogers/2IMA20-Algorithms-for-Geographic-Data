@@ -46,8 +46,8 @@ bool MapSimplification::Init()
 
 	Parser parser;
 
-	m_lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
-	m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
+	m_lines = parser.ParseLineFile("Data\\training_data1\\lines_out.txt");
+	m_points = parser.ParsePointFile("Data\\training_data1\\points_out.txt");
 
 	return true;
 }
@@ -143,20 +143,29 @@ void MapSimplification::DrawScene()
 	// Draw original and simplified map
 	glPushMatrix();
 	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(0, 0, m_width * 0.5, m_height);
 		DrawOriginalPanel();
+		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
 
 	glPushMatrix();
 	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(m_width * 0.5, 0, m_width, m_height);
 		glTranslatef(midX, 0, 0);
-		DrawSimplifiedPanel();
+		DrawOriginalPanel();
+		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
 
 	// Draw divider
 	glColor3f(1.0, 1.0, 1.0);
+
+	glLineWidth(20.0);
 	glBegin(GL_LINE_STRIP);
+		
 		glVertex2f(midX, 0);
 		glVertex2f(midX, m_height);
 	glEnd();
@@ -208,18 +217,20 @@ void MapSimplification::DrawOriginalPanel()
 	glPushMatrix();
 		// padding
 		glTranslatef(10, 10, 0);
+		glTranslatef(m_topleft.x, m_topleft.y, 0);
 
 		// Draw points
-		glScalef(scale, scale, 0);
-		glTranslatef(-min.x, -min.y, 0);
+		glScalef(scale * m_zoom, -scale * m_zoom, 0);
+		glTranslatef(-min.x, -min.y - pointDims.y, 0);
+		
 		
 		glColor3f(0.2, 0.2, 0.2);
 		// Draw lines
 		int i = 1;
 		for each (vector<glm::vec2> line in m_lines)
 		{
-			//float col = ((float)i / (float)m_lines.size());
-			//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
+			float col = ((float)i / (float)m_lines.size());
+			glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
 
 			// Draw line
 			glBegin(GL_LINE_STRIP);
@@ -228,7 +239,19 @@ void MapSimplification::DrawOriginalPanel()
 				glVertex2f(vert.x, vert.y);
 			}
 			glEnd();
+
+
+			//glColor3f(1.0, 1.0, 0.4);
+
+			// Draw points
+			glBegin(GL_POINTS);
+
+				glVertex2f(line[0].x, line[0].y);
+				glVertex2f(line[line.size()-1].x, line[line.size()-1].y);
+			glEnd();
+
 			i++;
+
 		}
 
 

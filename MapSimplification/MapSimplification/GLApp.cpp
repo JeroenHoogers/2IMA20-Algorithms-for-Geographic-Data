@@ -9,7 +9,7 @@ int GLApp::LIBRARY_VERSION = 4;
 float GLApp::MIN_CAMERA_ZOOM = 1;
 
 // Distance multiplier per mouse wheel tick.
-float GLApp::MOUSE_WHEEL_FACTOR = 1.2;
+float GLApp::MOUSE_WHEEL_FACTOR = 1.1;
 	
 // Minimum value of vWidth.
 float GLApp::VWIDTH_MIN = 1;
@@ -137,6 +137,10 @@ bool GLApp::Init()
 
 	InitMenu();
 
+	m_zoom = MIN_CAMERA_ZOOM;
+
+	glutSetCursor(GLUT_CURSOR_CYCLE);
+
 	return true;
 }
 
@@ -183,7 +187,11 @@ void GLApp::HandleMouseMotionInput(int x, int y)
 	float dY = y - dragSourceY;
 		
 	// TODO: handle mouse input
+	m_topleft += glm::vec2(dX, dY);
 
+	//m_topleft.x = max(m_topleft.x, 0);
+	//m_topleft.y = max(m_topleft.y, 0);
+	
 		
 	dragSourceX = x;
 	dragSourceY = y;
@@ -194,7 +202,7 @@ void GLApp::HandleMouseWheelInput(int button, int dir, int x, int y)
 	//std::cout << "mouseWheelinput (x:" << x << ", y: " << y <<")\n";
 	m_zoom = (float) max(MIN_CAMERA_ZOOM,
 							m_zoom *
-							pow(MOUSE_WHEEL_FACTOR, -dir));
+							pow(MOUSE_WHEEL_FACTOR, dir));
 }
 
 void GLApp::HandleKeyboardInput(unsigned char key, int x, int y)

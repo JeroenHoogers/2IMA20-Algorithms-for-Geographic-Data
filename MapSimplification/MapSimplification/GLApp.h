@@ -50,6 +50,7 @@ protected:
 	UINT		m_height;
 
 	float		m_zoom;
+	glm::vec2	m_topleft;
 
 
 	__int64		m_prevTime;
