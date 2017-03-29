@@ -11,9 +11,9 @@ Parser::~Parser()
 {
 }
 
-vector<vector<glm::vec2>> Parser::ParseLineFile(string input)
+vector<Line*> Parser::ParseLineFile(string input)
 {
-	vector<vector<glm::vec2>> lines;
+	vector<Line*> lines;
 	
 	int lineNr;
 	string gmlString;
@@ -55,7 +55,7 @@ vector<vector<glm::vec2>> Parser::ParseLineFile(string input)
 				gmlString = gmlString.substr(gmlString.find(' ') + 1, gmlString.length());
 			}
 
-			lines.push_back(points);
+			lines.push_back(new Line(points));
 		}
 	}
 	infile.close();

@@ -1,13 +1,12 @@
 #include "GLApp.h"
 #include "Parser.h"
-#include "VisvalingamWhyatt.h"
 #include "Line.h"
 #include <ctime>
 
 class MapSimplification : public GLApp
 {
 public:
-	MapSimplification();
+	MapSimplification(vector<Line*> originalLines, vector<Line*> simplifiedLines, vector<glm::vec2> points);
 	~MapSimplification();
 
 	// overrides
@@ -29,7 +28,8 @@ private:
 	glm::vec2 center;
 	glm::vec2 camPos;
 
-	vector<Line*> m_lines;
+	vector<Line*> m_originalLines;
+	vector<Line*> m_simplifiedLines;
 	vector<glm::vec2> m_points;
 
 	glm::vec2 m_min;

@@ -2,7 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "GLApp.h"
+#include "GLUtil.h"
+#include "Line.h"
 using namespace std;
 
 class Parser
@@ -11,7 +12,7 @@ public:
 	Parser();
 	~Parser();
 	
-	vector<vector<glm::vec2>> ParseLineFile(string input);
+	vector<Line*> ParseLineFile(string input);
 	vector<glm::vec2> ParsePointFile(string input);
 };
 

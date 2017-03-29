@@ -1,7 +1,10 @@
 ﻿#include "MapSimplification.h"
 
-MapSimplification::MapSimplification() : GLApp()
+MapSimplification::MapSimplification(vector<Line*> originalLines, vector<Line*> simplifiedLines, vector<glm::vec2> points) : GLApp()
 {
+	m_originalLines = originalLines;
+	m_simplifiedLines = simplifiedLines;
+	m_points = points;
 	m_AppTitle = "Geometry Simplification";
 }
 
@@ -47,21 +50,21 @@ bool MapSimplification::Init()
 	glEnable(GL_NORMALIZE);
 
 
-	Parser parser;
+	//Parser parser;
 
-	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
-	for each (vector<glm::vec2> line in lines)
-	{
-		m_lines.push_back(new Line(line));
-	}
+	//vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
+	//for each (vector<glm::vec2> line in lines)
+	//{
+	//	m_lines.push_back(new Line(line));
+	//}
 
-	m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
+	//m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
 
 	// Obtain min and max coordinates
 	m_min = glm::vec2(FLT_MAX);
 	m_max = glm::vec2(-FLT_MAX);
 
-	for (vector<Line*>::const_iterator it = m_lines.begin(), e = m_lines.end(); it != e; ++it)
+	for (vector<Line*>::const_iterator it = m_originalLines.begin(), e = m_originalLines.end(); it != e; ++it)
 	{
 		//line.CalculateAABB();
 		for each (glm::vec2 vert in (*it)->verts)
@@ -182,8 +185,8 @@ void MapSimplification::DrawScene()
 		glEnable(GL_SCISSOR_TEST);
 		glScissor(m_width * 0.5, 0, m_width, m_height);
 		glTranslatef(midX, 0, 0);
-		DrawOriginalPanel();
-		//DrawSimplifiedPanel();
+		//DrawOriginalPanel();
+		DrawSimplifiedPanel();
 		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
@@ -234,7 +237,7 @@ void MapSimplification::DrawOriginalPanel()
 		// Draw lines
 		Line* l = nullptr;
 
-		for (vector<Line*>::const_iterator it = m_lines.begin(), e = m_lines.end(); it != e; ++it)
+		for (vector<Line*>::const_iterator it = m_originalLines.begin(), e = m_originalLines.end(); it != e; ++it)
 		{
 			l = *it;
 
@@ -296,7 +299,7 @@ void MapSimplification::DrawSimplifiedPanel()
 
 	// calculate scale
 	//	float panelRatio = (m_width * 0.5) / m_height;
-	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5, (float)m_height);
+	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5 - 20, (float)m_height - 20);
 	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
 	glm::vec2 ratio = panelDims / pointDims;
 
@@ -304,41 +307,52 @@ void MapSimplification::DrawSimplifiedPanel()
 
 	glPushMatrix();
 	// padding
-	//glTranslatef(10, 10, 0);
-	glTranslatef(m_topleft.x * 0.5, m_topleft.y * 0.5, 0);
+	glTranslatef(10, 10, 0);
+	glTranslatef(m_topleft.x, m_topleft.y, 0);
 
 	// Draw points
 	glScalef(scale * m_zoom, -scale * m_zoom, 0);
 	glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
 
-	glColor3f(0.2, 0.2, 0.2);
+
 
 	// Draw lines
-	for each (Line* line in m_lines)
+	Line* l = nullptr;
+
+	for (vector<Line*>::const_iterator it = m_simplifiedLines.begin(), e = m_simplifiedLines.end(); it != e; ++it)
 	{
+		l = *it;
+
+		glColor3f(0.2, 0.2, 0.2);
+		glLineWidth(2.5);
 		//float col = ((float)i / (float)m_lines.size());
 		//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
 
 		// Draw line
 		glBegin(GL_LINE_STRIP);
-		for each (glm::vec2 vert in line->verts)
+		for each (glm::vec2 vert in l->verts)
 		{
 			glVertex2f(vert.x, vert.y);
 		}
 		glEnd();
 
 
-		//glColor3f(1.0, 1.0, 0.4);
-
 		// Draw points
-		glBegin(GL_POINTS);
+		if (m_showEndpoints)
+		{
+			glBegin(GL_POINTS);
+			{
+				glVertex2f(l->verts[0].x, l->verts[0].y);
+				glVertex2f(l->verts[l->verts.size() - 1].x, l->verts[l->verts.size() - 1].y);
+			}
+			glEnd();
+		}
 
-		glVertex2f(line->verts[0].x, line->verts[0].y);
-		glVertex2f(line->verts[line->verts.size() - 1].x, line->verts[line->verts.size() - 1].y);
-		glEnd();
+		if (m_showAABBs)
+			l->DrawAABB();
 	}
 
-	glColor3f(1.0, 1.0, 0.4);
+	glColor3f(0.4, 1.0, 0.4);
 
 	// Draw points
 	glBegin(GL_POINTS);
@@ -346,7 +360,6 @@ void MapSimplification::DrawSimplifiedPanel()
 	{
 		glVertex2f(vert.x, vert.y);
 	}
-	glColor3f(1.0, 0.4, 0.4);
 	glEnd();
 
 	glPopMatrix();
@@ -371,24 +384,4 @@ void MapSimplification::DrawGUI()
 
 	// Draw menu hint
 	DrawString("Open menu by clicking the Right Mouse Button", GLUT_BITMAP_8_BY_13, 25, m_height - 25);
-}
-
-/**
- * Main program execution body, delegates to an instance of the MapSimplification
- * implementation.
- */
-int _tmain(int argc, char** argv)
-{
-	// TODO: Extract arguments
-
-	glutInit( &argc, argv);
-
-	MapSimplification mapSimplification;
-
-	if(!mapSimplification.Init())
-		return 1;
-
-	mapSimplification.Run();
-
-	return 0;
 }

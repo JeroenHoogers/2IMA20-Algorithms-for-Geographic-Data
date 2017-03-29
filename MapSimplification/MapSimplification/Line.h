@@ -18,9 +18,10 @@ class Line
 {
 private:
 
-	std::vector<glm::vec2*> m_pNearControlPoints;
-	std::vector<Line*> m_pNearLines;
+	std::vector<const glm::vec2*> m_pNearControlPoints;
+	std::vector<const Line*> m_pNearLines;
 
+	float sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3);
 
 public:
 
@@ -32,8 +33,9 @@ public:
 	~Line();
 
 	void CalculateAABB();
-	bool AABBContainsControlPoint(glm::vec2* controlPoint);
-	bool AABBIntersectsLineAABB(Line* line);
+	bool AABBContainsControlPoint(const glm::vec2& controlPoint);
+	bool AABBIntersectsLineAABB(const Line&);
+	bool HasPointInTriangle(const glm::vec2& v1, const glm::vec2& v2, const glm::vec2& v3);
 
 	// TODO: Remove vertex
 	void RemoveVertex(int indexVertex);
