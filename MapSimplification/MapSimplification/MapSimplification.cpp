@@ -49,22 +49,22 @@ bool MapSimplification::Init()
 
 	Parser parser;
 
-	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data3\\lines_out.txt");
+	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
 	for each (vector<glm::vec2> line in lines)
 	{
-		m_lines.push_back(Line(line));
+		m_lines.push_back(new Line(line));
 	}
 
-	m_points = parser.ParsePointFile("Data\\training_data3\\points_out.txt");
+	m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
 
 	// Obtain min and max coordinates
 	m_min = glm::vec2(FLT_MAX);
 	m_max = glm::vec2(-FLT_MAX);
 
-	for each (Line line in m_lines)
+	for (vector<Line*>::const_iterator it = m_lines.begin(), e = m_lines.end(); it != e; ++it)
 	{
 		//line.CalculateAABB();
-		for each (glm::vec2 vert in line.verts)
+		for each (glm::vec2 vert in (*it)->verts)
 		{
 			// Store min coords
 			if (m_min.x > vert.x) m_min.x = vert.x;
@@ -232,8 +232,12 @@ void MapSimplification::DrawOriginalPanel()
 
 		
 		// Draw lines
-		for each (Line line in m_lines)
+		Line* l = nullptr;
+
+		for (vector<Line*>::const_iterator it = m_lines.begin(), e = m_lines.end(); it != e; ++it)
 		{
+			l = *it;
+
 			glColor3f(0.2, 0.2, 0.2);
 			glLineWidth(2.5);
 			//float col = ((float)i / (float)m_lines.size());
@@ -241,7 +245,7 @@ void MapSimplification::DrawOriginalPanel()
 
 			// Draw line
 			glBegin(GL_LINE_STRIP);
-			for each (glm::vec2 vert in line.verts)
+			for each (glm::vec2 vert in l->verts)
 			{
 				glVertex2f(vert.x, vert.y);
 			}
@@ -253,14 +257,14 @@ void MapSimplification::DrawOriginalPanel()
 			{
 				glBegin(GL_POINTS);
 				{
-					glVertex2f(line.verts[0].x, line.verts[0].y);
-					glVertex2f(line.verts[line.verts.size() - 1].x, line.verts[line.verts.size() - 1].y);
+					glVertex2f(l->verts[0].x, l->verts[0].y);
+					glVertex2f(l->verts[l->verts.size() - 1].x, l->verts[l->verts.size() - 1].y);
 				}
 				glEnd();
 			}
 
 			if(m_showAABBs)
-				line.DrawAABB();
+				l->DrawAABB();
 		}
 
 		glColor3f(0.4, 1.0, 0.4);
@@ -310,14 +314,14 @@ void MapSimplification::DrawSimplifiedPanel()
 	glColor3f(0.2, 0.2, 0.2);
 
 	// Draw lines
-	for each (Line line in m_lines)
+	for each (Line* line in m_lines)
 	{
 		//float col = ((float)i / (float)m_lines.size());
 		//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
 
 		// Draw line
 		glBegin(GL_LINE_STRIP);
-		for each (glm::vec2 vert in line.verts)
+		for each (glm::vec2 vert in line->verts)
 		{
 			glVertex2f(vert.x, vert.y);
 		}
@@ -329,8 +333,8 @@ void MapSimplification::DrawSimplifiedPanel()
 		// Draw points
 		glBegin(GL_POINTS);
 
-		glVertex2f(line.verts[0].x, line.verts[0].y);
-		glVertex2f(line.verts[line.verts.size() - 1].x, line.verts[line.verts.size() - 1].y);
+		glVertex2f(line->verts[0].x, line->verts[0].y);
+		glVertex2f(line->verts[line->verts.size() - 1].x, line->verts[line->verts.size() - 1].y);
 		glEnd();
 	}
 

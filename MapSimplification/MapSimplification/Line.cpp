@@ -18,7 +18,6 @@ Line::Line(std::vector<glm::vec2> vertices)
 	CalculateAABB();
 }
 
-
 Line::~Line()
 {
 }
