@@ -126,6 +126,7 @@
     <ClInclude Include="MapSimplification.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="TrajectoryPanel.h" />
+    <ClInclude Include="VisvalingamWhyatt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GLApp.cpp" />
@@ -134,6 +135,7 @@
     <ClCompile Include="MapSimplification.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="TrajectoryPanel.cpp" />
+    <ClCompile Include="VisvalingamWhyatt.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -84,3 +84,9 @@ void Line::DrawAABB()
 		glVertex2f(aabb.c.x - aabb.r.x, aabb.c.y - aabb.r.y);
 	glEnd();
 }
+
+
+void Line::RemoveVertex(int indexVertex)
+{
+	verts.erase(verts.begin() + indexVertex);
+}

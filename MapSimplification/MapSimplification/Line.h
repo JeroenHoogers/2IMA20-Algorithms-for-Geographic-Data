@@ -36,6 +36,7 @@ public:
 	bool AABBIntersectsLineAABB(Line* line);
 
 	// TODO: Remove vertex
+	void RemoveVertex(int indexVertex);
 
 	void DrawAABB();
 };

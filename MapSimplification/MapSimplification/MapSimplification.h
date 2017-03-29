@@ -1,5 +1,6 @@
 #include "GLApp.h"
 #include "Parser.h"
+#include "VisvalingamWhyatt.h"
 #include "Line.h"
 #include <ctime>
 
