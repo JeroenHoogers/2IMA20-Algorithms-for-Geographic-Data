@@ -249,6 +249,8 @@ void GLApp::InitMenu()
 	// Main menu
 	m_menuId = glutCreateMenu(HandleItemMenuInputCallback);
 	glutAddMenuEntry("Reset", 0);
+	glutAddMenuEntry("Show / Hide Endpoints", 1);
+	glutAddMenuEntry("Show / Hide Bounding Boxes", 2);
 }
 
 
@@ -259,6 +261,14 @@ void GLApp::HandleItemMenuInput(int menuItemNumber)
 	case 0:	// Reset
 		m_zoom = MIN_CAMERA_ZOOM;
 		m_topleft = glm::vec2(0);
+		break;
+
+	case 1: // Show Endpoints
+		m_showEndpoints = !m_showEndpoints;
+		break;
+
+	case 2: // Show AABBs
+		m_showAABBs = !m_showAABBs;
 		break;
 
 	default:

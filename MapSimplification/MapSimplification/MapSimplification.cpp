@@ -19,6 +19,9 @@ bool MapSimplification::Init()
 	center = glm::vec2(0, 0);
 	camPos = glm::vec2(0, 0);
 
+
+	m_showAABBs = false;
+	m_showEndpoints = false;
 	// TODO: Initialization
 
 	// Enable blending.
@@ -46,13 +49,13 @@ bool MapSimplification::Init()
 
 	Parser parser;
 
-	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data5\\lines_out.txt");
+	vector<vector<glm::vec2>> lines = parser.ParseLineFile("Data\\training_data3\\lines_out.txt");
 	for each (vector<glm::vec2> line in lines)
 	{
 		m_lines.push_back(Line(line));
 	}
 
-	m_points = parser.ParsePointFile("Data\\training_data5\\points_out.txt");
+	m_points = parser.ParsePointFile("Data\\training_data3\\points_out.txt");
 
 	// Obtain min and max coordinates
 	m_min = glm::vec2(FLT_MAX);
@@ -60,7 +63,7 @@ bool MapSimplification::Init()
 
 	for each (Line line in m_lines)
 	{
-		line.CalculateAABB();
+		//line.CalculateAABB();
 		for each (glm::vec2 vert in line.verts)
 		{
 			// Store min coords
@@ -232,6 +235,7 @@ void MapSimplification::DrawOriginalPanel()
 		for each (Line line in m_lines)
 		{
 			glColor3f(0.2, 0.2, 0.2);
+			glLineWidth(2.5);
 			//float col = ((float)i / (float)m_lines.size());
 			//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
 
@@ -245,12 +249,18 @@ void MapSimplification::DrawOriginalPanel()
 
 
 			// Draw points
-			glBegin(GL_POINTS);
-				glVertex2f(line.verts[0].x, line.verts[0].y);
-				glVertex2f(line.verts[line.verts.size()-1].x, line.verts[line.verts.size()-1].y);
-			glEnd();
+			if (m_showEndpoints)
+			{
+				glBegin(GL_POINTS);
+				{
+					glVertex2f(line.verts[0].x, line.verts[0].y);
+					glVertex2f(line.verts[line.verts.size() - 1].x, line.verts[line.verts.size() - 1].y);
+				}
+				glEnd();
+			}
 
-			line.DrawAABB();
+			if(m_showAABBs)
+				line.DrawAABB();
 		}
 
 		glColor3f(0.4, 1.0, 0.4);

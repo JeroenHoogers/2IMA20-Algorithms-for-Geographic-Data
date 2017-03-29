@@ -14,6 +14,8 @@ Line::Line(std::vector<glm::vec2> vertices)
 	m_pNearLines = std::vector<Line*>();
 
 	verts = vertices;
+
+	CalculateAABB();
 }
 
 
@@ -30,11 +32,11 @@ void Line::CalculateAABB()
 	// Calculate AABB
 	for each (glm::vec2	vertex in verts)
 	{
-		if (min.x < vertex.x) min.x = vertex.x;
-		if (min.y < vertex.y) min.y = vertex.y;
+		if (min.x > vertex.x) min.x = vertex.x;
+		if (min.y > vertex.y) min.y = vertex.y;
 
-		if (max.x > vertex.x) max.x = vertex.x;
-		if (max.y > vertex.y) max.y = vertex.y;
+		if (max.x < vertex.x) max.x = vertex.x;
+		if (max.y < vertex.y) max.y = vertex.y;
 	}
 
 	glm::vec2 c = glm::vec2((min.x + max.x) * 0.5, (min.y + max.y) * 0.5);

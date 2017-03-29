@@ -52,6 +52,8 @@ protected:
 	float		m_zoom;
 	glm::vec2	m_topleft;
 
+	bool		m_showAABBs;
+	bool		m_showEndpoints;
 
 	__int64		m_prevTime;
 	__int64		m_countsPerSec;
