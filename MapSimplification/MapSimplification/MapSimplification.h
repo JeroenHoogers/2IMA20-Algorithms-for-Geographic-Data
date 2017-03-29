@@ -1,5 +1,6 @@
 #include "GLApp.h"
 #include "Parser.h"
+#include "Line.h"
 #include <ctime>
 
 class MapSimplification : public GLApp
@@ -27,7 +28,7 @@ private:
 	glm::vec2 center;
 	glm::vec2 camPos;
 
-	vector<vector<glm::vec2>> m_lines;
+	vector<Line> m_lines;
 	vector<glm::vec2> m_points;
 
 	glm::vec2 m_min;

@@ -122,6 +122,7 @@
   <ItemGroup>
     <ClInclude Include="GLApp.h" />
     <ClInclude Include="GLUtil.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="MapSimplification.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="TrajectoryPanel.h" />
@@ -129,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="GLApp.cpp" />
     <ClCompile Include="GLUtil.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="MapSimplification.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="TrajectoryPanel.cpp" />
