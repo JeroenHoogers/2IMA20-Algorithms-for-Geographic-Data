@@ -15,13 +15,30 @@ Line::Line(std::vector<glm::vec2> vertices)
 
 	verts = vertices;
 
+	// Check whether this is an island, if so add fake control point in the middle
+	if (verts[0] == verts[verts.size()-1])
+		addPointInsideIsland();
 	//CalculateAABB();
+
 }
 
 Line::~Line()
 {
 }
 
+
+void Line::addPointInsideIsland()
+{
+	glm::vec2* p;
+
+	// Assuming the island is convex
+	if (verts.size() >= 4)
+	{
+		p = new glm::vec2((verts[0] + verts[1] + verts[2]) / 3.0f);
+		m_pNearControlPoints.push_back(p);
+	}
+
+}
 
 void Line::CalculateAABB()
 {
@@ -61,8 +78,8 @@ bool Line::AABBContainsControlPoint(const glm::vec2& controlPoint)
 bool Line::AABBIntersectsLineAABB(const Line& line)
 {
 	// check if the line bounding boxes overlap
-	if (fabs(aabb.c.x - line.aabb.c.x) > (aabb.r.x + line.aabb.r.x)) return false;
-	if (fabs(aabb.c.y - line.aabb.c.y) > (aabb.r.y + line.aabb.r.y)) return false;
+	if (fabs(aabb.c.x - line.aabb.c.x) >= (aabb.r.x + line.aabb.r.x)) return false;
+	if (fabs(aabb.c.y - line.aabb.c.y) >= (aabb.r.y + line.aabb.r.y)) return false;
 
 	// bounding boxes ovelap
 	// Exclude self by comparing aabbs
@@ -110,6 +127,27 @@ bool Line::HasPointInTriangle(const glm::vec2& v1, const glm::vec2& v2, const gl
 
 		if ((b1 == b2) && (b2 == b3))
 			return true;
+	}
+	return false;
+}
+
+
+bool Line::HasLineInTriangle(const glm::vec2& v1, const glm::vec2& v2, const glm::vec2& v3)
+{
+	// TODO: fix floating point errors
+	bool b1, b2, b3;
+
+	for (std::vector<const Line*>::const_iterator it = m_pNearLines.begin(), e = m_pNearLines.end(); it < e; it++)
+	{
+		for each (glm::vec2 vert in (*it)->verts)
+		{
+			b1 = sign(vert, v1, v2) < 0.0f;
+			b2 = sign(vert, v2, v3) < 0.0f;
+			b3 = sign(vert, v3, v1) < 0.0f;
+
+			if ((b1 == b2) && (b2 == b3))
+				return true;
+		}
 	}
 	return false;
 }

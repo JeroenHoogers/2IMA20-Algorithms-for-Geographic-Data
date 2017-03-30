@@ -210,7 +210,6 @@ void MapSimplification::DrawScene()
 		glVertex2f(midX, 0);
 		glVertex2f(midX, m_height);
 	glEnd();
-
 }
 
 

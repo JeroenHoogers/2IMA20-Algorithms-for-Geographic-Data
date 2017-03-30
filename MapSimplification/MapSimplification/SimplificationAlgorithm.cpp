@@ -145,21 +145,13 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 		while (simplifiedLine->verts.size() > vertsToKeep)
 		{
 			vertsToKeep = 2;
+
 			//Calculate minimal effective area
 			minArea = FLT_MAX;
-			if (!l->HasPointInTriangle(simplifiedLine->verts[0], simplifiedLine->verts[1], simplifiedLine->verts[2]))
-			{
-				minArea = CalculateArea(simplifiedLine->verts[0], simplifiedLine->verts[1], simplifiedLine->verts[2]);
-				indexToRemove = 1;
-			}
-			else
-			{
-				vertsToKeep++;
-				indexToRemove = -1;
-			}
-
-			i = 2;
-			for (std::vector<glm::vec2>::const_iterator v_it = simplifiedLine->verts.begin() + 2, v_e = simplifiedLine->verts.end(); v_it < v_e - 1; v_it++) //int i = 2; i < simplifiedLine.verts.size() - 1; i++)
+			
+			indexToRemove = -1;
+			i = 1;
+			for (std::vector<glm::vec2>::const_iterator v_it = simplifiedLine->verts.begin() + 1, v_e = simplifiedLine->verts.end(); v_it < v_e - 1; v_it++) //int i = 2; i < simplifiedLine.verts.size() - 1; i++)
 			{
 				v = *v_it;
 				v_next = *(v_it + 1);
@@ -168,8 +160,9 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 				//TODO : Only consider possible simplifications
 				//TODO : Check if simplification would intersect another line
 
+
 				//Check if point in Area, con
-				if (!l->HasPointInTriangle(v_prev, v, v_next))
+				if (!l->HasPointInTriangle(v_prev, v, v_next) && !l->HasLineInTriangle(v_prev, v, v_next))
 				{
 					float curArea = CalculateArea(v_prev, v, v_next);
 					if (minArea > curArea)
