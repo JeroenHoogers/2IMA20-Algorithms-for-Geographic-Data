@@ -121,48 +121,6 @@ void MapSimplification::SetView()
 */
 void MapSimplification::DrawBackground()
 {
-	// Background properties
-	//float innerColor[] = {1,1,1};
-	//float outerColor[] = {0.6, 0.6, 0.6};
-	//int slices = 50;
-	//float radius = 1.5;
-	//float incr = (float) (2 * M_PI / slices);
-
-	//// Switch to 2D mode
-	//glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_LIGHTING);
-
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-
-	//// Draw background gradient
-	//glBegin(GL_QUADS);
-
-	//	//glColor3fv(innerColor);
-	//	glVertex2f(-1.0f, -1.0f);
-	//	glVertex2f(1.0f, -1.0f);
-	//	glVertex2f(-1.0f, 1.0f);
-	//	glVertex2f(1.0f, 1.0f);
-
-	//	//glColor3fv(outerColor);
-
-	//	//for(int i = 0; i < slices; i++)
-	//	//{
-	//	//	float angle = incr * i;
-
-	//	//	float x = (float) cos(angle) * radius;
-	//	//	float y = (float) sin(angle) * radius;
-
-	//	//	glVertex2f(x, y);
-	//	//}
-
-	//	//glVertex2f(radius, 0.0f);
-
-	//glEnd();
-
-	//// Set projection matrix.
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
 }
 
 

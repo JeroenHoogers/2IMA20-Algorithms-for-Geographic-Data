@@ -24,6 +24,7 @@ private:
 	float sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3);
 
 	void addPointInsideIsland();
+	bool isPointInsideIsland(const glm::vec2& p);
 
 public:
 	

@@ -26,18 +26,48 @@ Line::~Line()
 {
 }
 
+// Checks whether a point is inside this line, assuming it is a closed loop (island) 
+bool Line::isPointInsideIsland(const glm::vec2& p)
+{
+	//// Check whether the point is inside the bounding box
+	//if (fabs(aabb.c.x - p.x) > aabb.r.x) return false;
+	//if (fabs(aabb.c.y - p.y) > aabb.r.y) return false;
 
+	bool inside = false;
+
+	// Check whether the point is inside the polygon
+	for (int i = 0, j = verts.size() - 1; i < verts.size(); j = i++)
+	{
+		if ((verts[i].y > p.y) != (verts[j].y > p.y) &&
+			p.x < (verts[j].x - verts[i].x) * (p.y - verts[i].y) / (verts[j].y - verts[i].y) + verts[i].x)
+		{
+			inside = !inside;
+		}
+	}
+
+	return inside;
+}
+
+// Adds a "fake" control point inside a closed loop line (island) so the algorithm does not collapse this line to just 2 endpoints
 void Line::addPointInsideIsland()
 {
 	glm::vec2* p;
+	glm::vec2 triangleCenter;
 
-	// Assuming the island is convex
-	if (verts.size() >= 4)
+	// Use 3 consecutive points in the line to form a triangle and take the center of this triangle as a potential control point
+	for (int i = 2; i < verts.size(); i++)
 	{
-		p = new glm::vec2((verts[0] + verts[1] + verts[2]) / 3.0f);
-		m_pNearControlPoints.push_back(p);
-	}
+		triangleCenter = glm::vec2((verts[i - 2] + verts[i - 1] + verts[i]) / 3.0f);
 
+		// Check whether the triangle center lies within the polygon, if so use it as a control point, otherwise advance to the next triangle
+		// Note that there must be at least one triangle with it's center inside the polygon
+		if (isPointInsideIsland(triangleCenter))
+		{
+			p = new glm::vec2(triangleCenter.x, triangleCenter.y);
+			m_pNearControlPoints.push_back(p);
+			return;
+		}
+	}
 }
 
 void Line::CalculateAABB()
