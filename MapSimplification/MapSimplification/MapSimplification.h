@@ -21,7 +21,7 @@ public:
 	void DrawGUI() override;
 	void DrawBackground();
 
-	void DrawOriginalPanel();
+	void DrawPanel(const vector<Line*>& lines);
 	void DrawSimplifiedPanel();
 
 private:

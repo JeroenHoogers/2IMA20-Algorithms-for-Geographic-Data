@@ -175,7 +175,9 @@ void MapSimplification::DrawScene()
 	{
 		glEnable(GL_SCISSOR_TEST);
 		glScissor(0, 0, m_width * 0.5, m_height);
-		DrawOriginalPanel();
+		DrawPanel(m_originalLines);
+		glColor3f(1.0, 1.0, 1.0);
+		DrawString("Original", GLUT_BITMAP_9_BY_15, 25, 25);
 		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
@@ -186,7 +188,10 @@ void MapSimplification::DrawScene()
 		glScissor(m_width * 0.5, 0, m_width, m_height);
 		glTranslatef(midX, 0, 0);
 		//DrawOriginalPanel();
-		DrawSimplifiedPanel();
+		//DrawSimplifiedPanel();
+		DrawPanel(m_simplifiedLines);
+		glColor3f(1.0, 1.0, 1.0);
+		DrawString("Simplification", GLUT_BITMAP_9_BY_15, 25, 25);
 		glDisable(GL_SCISSOR_TEST);
 	}
 	glPopMatrix();
@@ -205,9 +210,9 @@ void MapSimplification::DrawScene()
 
 
 /**
-* Draws the original map
+* Draws a panel
 */
-void MapSimplification::DrawOriginalPanel()
+void MapSimplification::DrawPanel(const vector<Line*>& lines)
 {
 	// Set line and point sizes
 	glLineWidth(2.5);
@@ -232,12 +237,10 @@ void MapSimplification::DrawOriginalPanel()
 		glScalef(scale * m_zoom, -scale * m_zoom, 0);
 		glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
 		
-
-		
 		// Draw lines
 		Line* l = nullptr;
 
-		for (vector<Line*>::const_iterator it = m_originalLines.begin(), e = m_originalLines.end(); it != e; ++it)
+		for (vector<Line*>::const_iterator it = lines.begin(), e = lines.end(); it != e; ++it)
 		{
 			l = *it;
 
@@ -281,91 +284,6 @@ void MapSimplification::DrawOriginalPanel()
 		glEnd();
 
 	glPopMatrix();
-
-	glColor3f(1.0, 1.0, 1.0);
-	DrawString("Original", GLUT_BITMAP_9_BY_15, 25, 25);
-}
-
-/**
-* Draws the simplified map
-*/
-void MapSimplification::DrawSimplifiedPanel()
-{
-	// Set line and point sizes
-	glLineWidth(2.5);
-	glPointSize(6.0);
-
-	// Draw polygons
-
-	// calculate scale
-	//	float panelRatio = (m_width * 0.5) / m_height;
-	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5 - 20, (float)m_height - 20);
-	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
-	glm::vec2 ratio = panelDims / pointDims;
-
-	float scale = (ratio.x < ratio.y) ? ratio.x : ratio.y;
-
-	glPushMatrix();
-	// padding
-	glTranslatef(10, 10, 0);
-	glTranslatef(m_topleft.x, m_topleft.y, 0);
-
-	// Draw points
-	glScalef(scale * m_zoom, -scale * m_zoom, 0);
-	glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
-
-
-
-	// Draw lines
-	Line* l = nullptr;
-
-	for (vector<Line*>::const_iterator it = m_simplifiedLines.begin(), e = m_simplifiedLines.end(); it != e; ++it)
-	{
-		l = *it;
-
-		glColor3f(0.2, 0.2, 0.2);
-		glLineWidth(2.5);
-		//float col = ((float)i / (float)m_lines.size());
-		//glColor3f(0.2, 0.2 + col * 0.8, 0.2 + col * 0.8);
-
-		// Draw line
-		glBegin(GL_LINE_STRIP);
-		for each (glm::vec2 vert in l->verts)
-		{
-			glVertex2f(vert.x, vert.y);
-		}
-		glEnd();
-
-
-		// Draw points
-		if (m_showEndpoints)
-		{
-			glBegin(GL_POINTS);
-			{
-				glVertex2f(l->verts[0].x, l->verts[0].y);
-				glVertex2f(l->verts[l->verts.size() - 1].x, l->verts[l->verts.size() - 1].y);
-			}
-			glEnd();
-		}
-
-		if (m_showAABBs)
-			l->DrawAABB();
-	}
-
-	glColor3f(0.4, 1.0, 0.4);
-
-	// Draw points
-	glBegin(GL_POINTS);
-	for each (glm::vec2 vert in m_points)
-	{
-		glVertex2f(vert.x, vert.y);
-	}
-	glEnd();
-
-	glPopMatrix();
-
-	glColor3f(1.0, 1.0, 1.0);
-	DrawString("Simplified", GLUT_BITMAP_8_BY_13, 25, 25);
 }
 
 /**

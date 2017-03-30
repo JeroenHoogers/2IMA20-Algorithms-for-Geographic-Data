@@ -14,11 +14,24 @@ SimplificationAlgorithm::~SimplificationAlgorithm()
 
 void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
 {
+	const clock_t beginTime = clock();
+	clock_t partTime = clock();
+
+	// do something
+	float seconds = 0;
+
 	//Parse input files
+	cout << "Parsing Input... ";
+	partTime = clock();
 	LoadInput(inputLinesPath, inputPointsPath);
+	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
+	cout << " (" << seconds << "s)" << endl;
+
 
 	//Calculate AABB's
 	//TODO : Speed up with sweepline
+	cout << "Calculating AABB and detecting nearby control points... ";
+	partTime = clock();
 	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
 	{
 		(*l_it)->CalculateAABB();
@@ -27,9 +40,20 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 			(*l_it)->AABBContainsControlPoint(*v_it);
 		}
 	}
+	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
+	cout << " (" << seconds << "s)" << endl;
 
 	//Run simplification algorithm VisvalingamWhyatt
+	cout << "Simplifying... ";
+	partTime = clock();
+
 	VisvalingamWhyatt();
+	
+	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
+	cout << " (" << seconds << "s)" << endl;
+
+	seconds = float(clock() - beginTime) / CLOCKS_PER_SEC;
+	cout << "Finished in " << seconds << "s" << endl;
 
 	//TODO : Write output
 
@@ -140,7 +164,7 @@ int _tmain(int argc, char** argv)
 	glutInit(&argc, argv);
 
 	SimplificationAlgorithm simplificationAlgorithm;
-	simplificationAlgorithm.Simplify(5, "Data\\training_data2\\lines_out.txt", "Data\\training_data2\\points_out.txt", "output.txt");
+	simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
 
 	return 0;
 }
