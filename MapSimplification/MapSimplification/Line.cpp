@@ -65,7 +65,9 @@ bool Line::AABBIntersectsLineAABB(const Line& line)
 	if (fabs(aabb.c.y - line.aabb.c.y) > (aabb.r.y + line.aabb.r.y)) return false;
 
 	// bounding boxes ovelap
-	m_pNearLines.push_back(&line);
+	// Exclude self by comparing aabbs
+	if(!(aabb.c == line.aabb.c && aabb.r == line.aabb.r))
+		m_pNearLines.push_back(&line);
 
 	return true;
 }

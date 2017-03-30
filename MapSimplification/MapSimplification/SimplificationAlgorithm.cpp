@@ -23,24 +23,21 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	//Parse input files
 	cout << "Parsing Input... ";
 	partTime = clock();
+
 	LoadInput(inputLinesPath, inputPointsPath);
+	
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " (" << seconds << "s)" << endl;
+	cout << " Done (" << seconds << "s)" << endl;
 
 	//Calculate AABB's
 	//TODO : Speed up with sweepline
-	cout << "Calculating AABB and detecting nearby control points... ";
+	cout << "Calculating AABB and detecting nearby control points and lines... ";
 	partTime = clock();
-	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
-	{
-		(*l_it)->CalculateAABB();
-		for (std::vector<glm::vec2>::const_iterator v_it = m_points.begin(), v_e = m_points.end(); v_it < v_e; v_it++)
-		{
-			(*l_it)->AABBContainsControlPoint(*v_it);
-		}
-	}
+
+	Preprocess();
+
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " (" << seconds << "s)" << endl;
+	cout << " Done (" << seconds << "s)" << endl;
 
 	//Run simplification algorithm VisvalingamWhyatt
 	cout << "Simplifying... ";
@@ -49,14 +46,28 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	VisvalingamWhyatt();
 	
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " (" << seconds << "s)" << endl;
+	cout << " Done (" << seconds << "s)" << endl;
 
-	seconds = float(clock() - beginTime) / CLOCKS_PER_SEC;
-	cout << "Finished in " << seconds << "s" << endl;
+
+	// Writing output file
+	cout << "Writing output... ";
+	partTime = clock();
 
 	//TODO : Write output
+	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
+	cout << " Done (" << seconds << "s)" << endl;
+
+
+	// Total time
+	seconds = float(clock() - beginTime) / CLOCKS_PER_SEC;
+	cout << "===========================================================" << endl;
+	cout << "Finished in " << seconds << "s" << endl;
+	cout << "===========================================================" << endl;
+
+	//TODO : Calculate grade
 
 	//TODO : Open result
+
 
 	MapSimplification mapSimplification(m_lines, m_simplifiedLines, m_points);
 
@@ -64,7 +75,35 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 		mapSimplification.Run();
 }
 
+void SimplificationAlgorithm::Preprocess()
+{
+	// Calculate AABBs and detect nearby control points
+	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
+	{
+		// Calculate AABB
+		(*l_it)->CalculateAABB();
 
+		// Find control points inside the AABB 
+		// Now O(n^2) could be improved using a sweepline algorithm
+		for (std::vector<glm::vec2>::const_iterator v_it = m_points.begin(), v_e = m_points.end(); v_it < v_e; v_it++)
+		{
+			(*l_it)->AABBContainsControlPoint(*v_it);
+		}
+	}
+
+	// Check AABB overlap to find lines that potentially cause topology errors when simplified
+	for (std::vector<Line*>::const_iterator l1_it = m_lines.begin(), l1_e = m_lines.end(); l1_it < l1_e; l1_it++)
+	{
+		for (std::vector<Line*>::const_iterator l2_it = m_lines.begin(), l2_e = m_lines.end(); l2_it < l2_e; l2_it++)
+		{
+			(*l1_it)->AABBIntersectsLineAABB(**l2_it);
+		}
+
+		// Debug print numbers of nearby points and lines found
+		//(*l1_it)->PrintLineInfo();
+	}
+
+}
 
 void SimplificationAlgorithm::LoadInput(string inputLines, string inputPoints)
 {

@@ -16,9 +16,11 @@ private:
 	vector<glm::vec2> m_points;
 	vector<Line*> m_simplifiedLines;
 
+	void Preprocess();
 	void LoadInput(string inputLines, string inputPoints);
 	float CalculateArea(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c);
 	void VisvalingamWhyatt();
+
 
 public:
 	SimplificationAlgorithm();
