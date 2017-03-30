@@ -53,6 +53,9 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	cout << "Writing output... ";
 	partTime = clock();
 
+	Parser parser;
+	parser.WriteOutput(m_simplifiedLines);
+
 	//TODO : Write output
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
 	cout << " Done (" << seconds << "s)" << endl;
@@ -73,6 +76,7 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 
 	if (mapSimplification.Init())
 		mapSimplification.Run();
+
 }
 
 void SimplificationAlgorithm::Preprocess()

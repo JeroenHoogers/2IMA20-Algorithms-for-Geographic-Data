@@ -14,5 +14,6 @@ public:
 	
 	vector<Line*> ParseLineFile(string input);
 	vector<glm::vec2> ParsePointFile(string input);
+	void WriteOutput(vector<Line*> lines);
 };
 
