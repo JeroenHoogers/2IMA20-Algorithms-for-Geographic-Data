@@ -27,7 +27,6 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
 	cout << " (" << seconds << "s)" << endl;
 
-
 	//Calculate AABB's
 	//TODO : Speed up with sweepline
 	cout << "Calculating AABB and detecting nearby control points... ";

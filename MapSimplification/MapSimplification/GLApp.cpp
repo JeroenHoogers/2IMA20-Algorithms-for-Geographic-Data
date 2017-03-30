@@ -186,7 +186,7 @@ void GLApp::HandleMouseMotionInput(int x, int y)
 		float dY = y - dragSourceY;
 
 		// TODO: handle mouse input
-		m_topleft += glm::vec2(dX, dY);
+		m_center += glm::vec2(dX / m_zoom, dY / m_zoom);
 
 		//m_topleft.x = max(m_topleft.x, 0);
 		//m_topleft.y = max(m_topleft.y, 0);
@@ -251,6 +251,7 @@ void GLApp::InitMenu()
 	glutAddMenuEntry("Reset", 0);
 	glutAddMenuEntry("Show / Hide Endpoints", 1);
 	glutAddMenuEntry("Show / Hide Bounding Boxes", 2);
+	glutAddMenuEntry("Show / Hide Control points", 3);
 }
 
 
@@ -260,15 +261,19 @@ void GLApp::HandleItemMenuInput(int menuItemNumber)
 	{
 	case 0:	// Reset
 		m_zoom = MIN_CAMERA_ZOOM;
-		m_topleft = glm::vec2(0);
+		m_center = glm::vec2(0);
 		break;
 
-	case 1: // Show Endpoints
+	case 1: // Show / Hide Endpoints
 		m_showEndpoints = !m_showEndpoints;
 		break;
 
-	case 2: // Show AABBs
+	case 2: // Show / Hide AABBs
 		m_showAABBs = !m_showAABBs;
+		break;
+
+	case 3: // Show / Hide Control points
+		m_showControlPoints = !m_showControlPoints;
 		break;
 
 	default:

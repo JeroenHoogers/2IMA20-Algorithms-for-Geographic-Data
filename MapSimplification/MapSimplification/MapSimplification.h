@@ -22,11 +22,9 @@ public:
 	void DrawBackground();
 
 	void DrawPanel(const vector<Line*>& lines);
-	void DrawSimplifiedPanel();
 
 private:
 	glm::vec2 center;
-	glm::vec2 camPos;
 
 	vector<Line*> m_originalLines;
 	vector<Line*> m_simplifiedLines;
@@ -34,4 +32,6 @@ private:
 
 	glm::vec2 m_min;
 	glm::vec2 m_max;
+
+	float m_scale;
 };

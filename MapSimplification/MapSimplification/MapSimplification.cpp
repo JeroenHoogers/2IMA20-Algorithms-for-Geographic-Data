@@ -19,12 +19,11 @@ bool MapSimplification::Init()
 		return false;
 
 	// Initialize the camera
-	center = glm::vec2(0, 0);
-	camPos = glm::vec2(0, 0);
-
+	center = glm::vec2(m_width * 0.25, m_height * 0.5);
 
 	m_showAABBs = false;
 	m_showEndpoints = false;
+	m_showControlPoints = true;
 	// TODO: Initialization
 
 	// Enable blending.
@@ -78,6 +77,12 @@ bool MapSimplification::Init()
 			if (m_max.y < vert.y) m_max.y = vert.y;
 		}
 	}
+
+	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5, (float)m_height);
+	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
+	glm::vec2 ratio = panelDims / pointDims;
+
+	m_scale = (ratio.x < ratio.y) ? ratio.x : ratio.y;
 
 	return true;
 }
@@ -222,20 +227,16 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 
 	// calculate scale
 //	float panelRatio = (m_width * 0.5) / m_height;
-	glm::vec2 panelDims = glm::vec2((float)m_width * 0.5 - 20, (float)m_height - 20);
-	glm::vec2 pointDims = glm::vec2(glm::distance(glm::vec2(m_max.x, 0), glm::vec2(m_min.x, 0)), glm::distance(m_max.y, m_min.y));
-	glm::vec2 ratio = panelDims / pointDims;
 
-	float scale = (ratio.x < ratio.y) ? ratio.x : ratio.y;
 
+//	float scale = ratio.x;
 	glPushMatrix();
 		// padding
-		glTranslatef(10, 10, 0);
-		glTranslatef(m_topleft.x, m_topleft.y, 0);
+		glTranslatef((m_width * 0.25) + m_center.x * m_zoom, (m_height * 0.5) + m_center.y * m_zoom, 0);
 
 		// Draw points
-		glScalef(scale * m_zoom, -scale * m_zoom, 0);
-		glTranslatef(-m_min.x, -m_min.y - pointDims.y, 0);
+		glScalef(m_scale * m_zoom, -m_scale * m_zoom, 0);
+		glTranslatef(-(m_min.x + m_max.x) * 0.5 , -(m_min.y + m_max.y) * 0.5, 0);
 		
 		// Draw lines
 		Line* l = nullptr;
@@ -273,15 +274,18 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 				l->DrawAABB();
 		}
 
-		glColor3f(0.4, 1.0, 0.4);
-
 		// Draw points
-		glBegin(GL_POINTS);
-		for each (glm::vec2 vert in m_points)
+		if (m_showControlPoints)
 		{
-			glVertex2f(vert.x, vert.y);
+			glColor3f(0.4, 1.0, 0.4);
+
+			glBegin(GL_POINTS);
+			for each (glm::vec2 vert in m_points)
+			{
+				glVertex2f(vert.x, vert.y);
+			}
+			glEnd();
 		}
-		glEnd();
 
 	glPopMatrix();
 }

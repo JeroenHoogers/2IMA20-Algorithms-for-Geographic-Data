@@ -50,10 +50,11 @@ protected:
 	UINT		m_height;
 
 	float		m_zoom;
-	glm::vec2	m_topleft;
+	glm::vec2	m_center;
 
 	bool		m_showAABBs;
 	bool		m_showEndpoints;
+	bool		m_showControlPoints;
 
 	__int64		m_prevTime;
 	__int64		m_countsPerSec;
