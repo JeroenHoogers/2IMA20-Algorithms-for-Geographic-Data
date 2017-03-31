@@ -28,11 +28,12 @@ private:
 
 public:
 	
+	int lnr;
 	AABB aabb;
 	std::vector<glm::vec2> verts;
 
 	Line();
-	Line(std::vector<glm::vec2> vertices);
+	Line(const int& lineNr, std::vector<glm::vec2> vertices);
 	~Line();
 
 	void CalculateAABB();

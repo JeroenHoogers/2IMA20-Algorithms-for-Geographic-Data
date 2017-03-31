@@ -141,7 +141,7 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 		l = *l_it;
 		//Create simplified Line
 		std::vector<glm::vec2> vertices = (*l).verts;//(*lines)[i].verts;
-		Line* simplifiedLine = new Line(vertices);
+		Line* simplifiedLine = new Line(l->lnr, vertices);
 
 		count = 0;
 		int vertsToKeep = 2;// +floor((simplifiedLine->verts.size() - 2) * 0.01);

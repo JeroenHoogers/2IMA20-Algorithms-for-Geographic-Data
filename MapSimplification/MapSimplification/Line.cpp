@@ -8,8 +8,9 @@ Line::Line()
 }
 
 
-Line::Line(std::vector<glm::vec2> vertices)
+Line::Line(const int& lineNr, std::vector<glm::vec2> vertices)
 {
+	lnr = lineNr;
 	m_pNearControlPoints = std::vector<const glm::vec2*>();
 	m_pNearLines = std::vector<const Line*>();
 
