@@ -89,7 +89,7 @@ void Parser::WriteOutput(vector<Line*> lines)
 	for (std::vector<Line*>::const_iterator l_it = lines.begin(), l_e = lines.end(); l_it < l_e; l_it++)
 	{
 		//Write line number with first gml tags
-		lineFile << (*l_it)->lnr << ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http ://www.opengis.net/gml\"><gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";
+		lineFile << (*l_it)->id << ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http ://www.opengis.net/gml\"><gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";
 
 		//Write line points
 		for (std::vector<glm::vec2>::const_iterator v_it = (*l_it)->verts.begin(), v_e = (*l_it)->verts.end(); v_it < v_e; v_it++)

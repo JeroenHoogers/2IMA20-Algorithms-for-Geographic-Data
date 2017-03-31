@@ -19,16 +19,18 @@ class Line
 private:
 
 	std::vector<const glm::vec2*> m_pNearControlPoints;
+	std::vector<const glm::vec2*> m_pHelperPoints;
 	std::vector<const Line*> m_pNearLines;
 
 	float sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3);
 
-	void addPointInsideIsland();
-	bool isPointInsideIsland(const glm::vec2& p);
+	void addHelperPoint(const std::vector<glm::vec2> polygon);
+	bool isPointInsidePolygon(const glm::vec2& p, const std::vector<glm::vec2> polygon);
 
 public:
-	
-	int lnr;
+	const glm::vec2* v;
+	const glm::vec2* u;
+	int id;
 	AABB aabb;
 	std::vector<glm::vec2> verts;
 
@@ -47,5 +49,7 @@ public:
 	void RemoveVertex(int indexVertex);
 
 	void DrawAABB();
+
+	void DrawHelperPoints();
 };
 

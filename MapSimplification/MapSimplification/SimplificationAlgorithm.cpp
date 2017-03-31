@@ -106,7 +106,6 @@ void SimplificationAlgorithm::Preprocess()
 		// Debug print numbers of nearby points and lines found
 		//(*l1_it)->PrintLineInfo();
 	}
-
 }
 
 void SimplificationAlgorithm::LoadInput(string inputLines, string inputPoints)
@@ -126,7 +125,6 @@ float SimplificationAlgorithm::CalculateArea(const glm::vec2& a, const glm::vec2
 
 void SimplificationAlgorithm::VisvalingamWhyatt()
 {
-	//for (int i = 0; i < lines->size(); i++)
 	Line* l = nullptr;
 	glm::vec2 v;
 	glm::vec2 v_next;
@@ -139,16 +137,16 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
 	{
 		l = *l_it;
+
 		//Create simplified Line
-		std::vector<glm::vec2> vertices = (*l).verts;//(*lines)[i].verts;
-		Line* simplifiedLine = new Line(l->lnr, vertices);
+		std::vector<glm::vec2> vertices = (*l).verts;
+		Line* simplifiedLine = new Line(l->id, vertices);
 
 		count = 0;
-		int vertsToKeep = 2;// +floor((simplifiedLine->verts.size() - 2) * 0.01);
+		bool deletionPossible = true;
 		//Find point to remove from line
-		while (simplifiedLine->verts.size() > vertsToKeep)
+		while (deletionPossible)
 		{
-			vertsToKeep = 2;
 
 			//Calculate minimal effective area
 			minArea = FLT_MAX;
@@ -161,11 +159,8 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 				v_next = *(v_it + 1);
 				v_prev = *(v_it - 1);
 
-				//TODO : Only consider possible simplifications
-				//TODO : Check if simplification would intersect another line
 
-
-				//Check if point in Area, con
+				//Check if point in Area
 				if (!l->HasPointInTriangle(v_prev, v, v_next) && !l->HasLineInTriangle(v_prev, v, v_next))
 				{
 					float curArea = CalculateArea(v_prev, v, v_next);
@@ -175,14 +170,12 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 						indexToRemove = i;
 					}
 				}
-				else
-				{
-					vertsToKeep++;
-				}
 				i++;
 			}
 			if (indexToRemove >= 0)
 				simplifiedLine->RemoveVertex(indexToRemove);
+			else
+				deletionPossible = false;
 			count++;
 		}
 		m_simplifiedLines.push_back(simplifiedLine);
@@ -193,13 +186,15 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 * Main program execution body, delegates to an instance of the MapSimplification
 * implementation.
 */
-int _tmain(int argc, char** argv)
+int _tmain(int argc, char* argv[])
 {
 	// TODO: Extract arguments
 	glutInit(&argc, argv);
 
+
 	SimplificationAlgorithm simplificationAlgorithm;
 	simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
+	//simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
 
 	return 0;
 }

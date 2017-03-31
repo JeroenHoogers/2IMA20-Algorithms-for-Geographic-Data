@@ -215,6 +215,15 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 			}
 			glEnd();
 
+			//glColor3f(0.8, 0.5, 0.2);
+			//glBegin(GL_POINTS);
+			//for each (glm::vec2 vert in l->verts)
+			//{
+			//	glVertex2f(vert.x, vert.y);
+			//}
+			//glEnd();
+
+			//glColor3f(0.2, 0.2, 0.2);
 
 			// Draw points
 			if (m_showEndpoints)
@@ -226,6 +235,8 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 				}
 				glEnd();
 			}
+
+			l->DrawHelperPoints();
 
 			if(m_showAABBs)
 				l->DrawAABB();

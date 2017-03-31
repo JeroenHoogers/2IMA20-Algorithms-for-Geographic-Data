@@ -10,17 +10,22 @@ Line::Line()
 
 Line::Line(const int& lineNr, std::vector<glm::vec2> vertices)
 {
-	lnr = lineNr;
+	id = lineNr;
 	m_pNearControlPoints = std::vector<const glm::vec2*>();
 	m_pNearLines = std::vector<const Line*>();
 
 	verts = vertices;
 
+	u = &verts[0];
+	v = &verts[verts.size() - 1];
+	
 	// Check whether this is an island, if so add fake control point in the middle
-	if (verts[0] == verts[verts.size()-1])
-		addPointInsideIsland();
+	if (*u == *v)
+		addHelperPoint(verts);
+	
 	//CalculateAABB();
 
+	// 
 }
 
 Line::~Line()
@@ -28,7 +33,7 @@ Line::~Line()
 }
 
 // Checks whether a point is inside this line, assuming it is a closed loop (island) 
-bool Line::isPointInsideIsland(const glm::vec2& p)
+bool Line::isPointInsidePolygon(const glm::vec2& p, const std::vector<glm::vec2> polygon)
 {
 	//// Check whether the point is inside the bounding box
 	//if (fabs(aabb.c.x - p.x) > aabb.r.x) return false;
@@ -37,10 +42,10 @@ bool Line::isPointInsideIsland(const glm::vec2& p)
 	bool inside = false;
 
 	// Check whether the point is inside the polygon
-	for (int i = 0, j = verts.size() - 1; i < verts.size(); j = i++)
+	for (int i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++)
 	{
-		if ((verts[i].y > p.y) != (verts[j].y > p.y) &&
-			p.x < (verts[j].x - verts[i].x) * (p.y - verts[i].y) / (verts[j].y - verts[i].y) + verts[i].x)
+		if ((polygon[i].y > p.y) != (polygon[j].y > p.y) &&
+			p.x < (polygon[j].x - polygon[i].x) * (p.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)
 		{
 			inside = !inside;
 		}
@@ -50,22 +55,22 @@ bool Line::isPointInsideIsland(const glm::vec2& p)
 }
 
 // Adds a "fake" control point inside a closed loop line (island) so the algorithm does not collapse this line to just 2 endpoints
-void Line::addPointInsideIsland()
+void Line::addHelperPoint(const std::vector<glm::vec2> polygon)
 {
 	glm::vec2* p;
 	glm::vec2 triangleCenter;
 
-	// Use 3 consecutive points in the line to form a triangle and take the center of this triangle as a potential control point
-	for (int i = 2; i < verts.size(); i++)
+		// Use 3 consecutive points in the line to form a triangle and take the center of this triangle as a potential control point
+	for (int i = 2; i < polygon.size(); i++)
 	{
-		triangleCenter = glm::vec2((verts[i - 2] + verts[i - 1] + verts[i]) / 3.0f);
+		triangleCenter = glm::vec2((polygon[i - 2] + polygon[i - 1] + polygon[i]) / 3.0f);
 
 		// Check whether the triangle center lies within the polygon, if so use it as a control point, otherwise advance to the next triangle
 		// Note that there must be at least one triangle with it's center inside the polygon
-		if (isPointInsideIsland(triangleCenter))
+		if (isPointInsidePolygon(triangleCenter, polygon))
 		{
 			p = new glm::vec2(triangleCenter.x, triangleCenter.y);
-			m_pNearControlPoints.push_back(p);
+			m_pHelperPoints.push_back(p);
 			return;
 		}
 	}
@@ -114,8 +119,28 @@ bool Line::AABBIntersectsLineAABB(const Line& line)
 
 	// bounding boxes ovelap
 	// Exclude self by comparing aabbs
-	if(!(aabb.c == line.aabb.c && aabb.r == line.aabb.r))
+	if (id != line.id)
+	{
 		m_pNearLines.push_back(&line);
+
+		// Add fake point
+		if (*u == *line.u && *v == *line.v)
+		{
+			std::vector<glm::vec2> polygon = verts;
+			std::reverse(polygon.begin(), polygon.end());
+			polygon.insert(polygon.end(), line.verts.begin() + 1, line.verts.end() - 1);
+			addHelperPoint(polygon);
+		}
+		else if (*u == *line.v && *v == *line.u)
+		{
+			std::vector<glm::vec2> polygon = verts;
+			polygon.insert(polygon.end(), line.verts.begin() + 1, line.verts.end() - 1);
+			addHelperPoint(polygon);
+			//glm::vec2* p = new glm::vec2((*u + *v) * 0.5f);
+			//m_pNearControlPoints.push_back(p);
+		}
+	}
+
 
 	return true;
 }
@@ -159,6 +184,15 @@ bool Line::HasPointInTriangle(const glm::vec2& v1, const glm::vec2& v2, const gl
 		if ((b1 == b2) && (b2 == b3))
 			return true;
 	}
+	for (std::vector<const glm::vec2*>::const_iterator it = m_pHelperPoints.begin(), v_e = m_pHelperPoints.end(); it < v_e; it++)
+	{
+		b1 = sign(**it, v1, v2) < 0.0f;
+		b2 = sign(**it, v2, v3) < 0.0f;
+		b3 = sign(**it, v3, v1) < 0.0f;
+
+		if ((b1 == b2) && (b2 == b3))
+			return true;
+	}
 	return false;
 }
 
@@ -170,15 +204,31 @@ bool Line::HasLineInTriangle(const glm::vec2& v1, const glm::vec2& v2, const glm
 
 	for (std::vector<const Line*>::const_iterator it = m_pNearLines.begin(), e = m_pNearLines.end(); it < e; it++)
 	{
-		for each (glm::vec2 vert in (*it)->verts)
+		// Parallel case
+		//for each (glm::vec2 vert in (*it)->verts)
+
+		for (std::vector<glm::vec2>::const_iterator v_it = (*it)->verts.begin() + 1, v_e = (*it)->verts.end() - 1; v_it < v_e; v_it++)
 		{
-			b1 = sign(vert, v1, v2) < 0.0f;
-			b2 = sign(vert, v2, v3) < 0.0f;
-			b3 = sign(vert, v3, v1) < 0.0f;
+			
+			b1 = sign(*v_it, v1, v2) < 0.0f;
+			b2 = sign(*v_it, v2, v3) < 0.0f;
+			b3 = sign(*v_it, v3, v1) < 0.0f;
 
 			if ((b1 == b2) && (b2 == b3))
 				return true;
 		}
 	}
 	return false;
+}
+
+void Line::DrawHelperPoints()
+{
+	glColor3f(0.2, 0.3, 0.9);
+	glBegin(GL_POINTS);
+	for each (const glm::vec2* vert in m_pHelperPoints)
+	{
+		glVertex2f(vert->x, vert->y);
+	}
+	glEnd();
+
 }
