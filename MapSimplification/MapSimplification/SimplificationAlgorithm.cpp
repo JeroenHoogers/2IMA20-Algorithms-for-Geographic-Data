@@ -13,7 +13,7 @@ SimplificationAlgorithm::~SimplificationAlgorithm()
 }
 
 
-void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
+float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
 {
 	const clock_t beginTime = clock();
 	clock_t partTime = clock();
@@ -129,6 +129,7 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	if (mapSimplification.Init())
 		mapSimplification.Run();
 
+	return seconds;
 }
 
 
@@ -249,11 +250,18 @@ int _tmain(int argc, char* argv[])
 {
 	// TODO: Extract arguments
 	glutInit(&argc, argv);
-
-
+	// Check the number of parameters
+	if (argc < 5) {
+		// Tell the user how to run the program
+		std::cerr << "Usage: " << argv[0] << " <amount_to_remove>" << " <input lines>" << " <input points>" << " <output>" << std::endl;
+		/* "Usage messages" are a conventional way of telling the user
+		* how to run a program if they enter the command incorrectly.
+		*/
+		return 1;
+	}
 	SimplificationAlgorithm simplificationAlgorithm;
-	simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
-	//simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
+	//return floor(simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt"));
+	return simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
 
 	return 0;
 }

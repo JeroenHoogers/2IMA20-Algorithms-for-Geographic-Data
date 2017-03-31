@@ -32,5 +32,5 @@ public:
 	SimplificationAlgorithm();
 	~SimplificationAlgorithm();
 
-	void Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath);
+	float Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath);
 };
