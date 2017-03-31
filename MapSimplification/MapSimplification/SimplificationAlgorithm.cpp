@@ -4,6 +4,7 @@
 
 SimplificationAlgorithm::SimplificationAlgorithm()
 {
+	m_nrThreads = 4;
 }
 
 
@@ -34,7 +35,42 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	cout << "Calculating AABB and detecting nearby control points and lines... ";
 	partTime = clock();
 
-	Preprocess();
+	int n = m_lines.size();
+	int start = 0;
+	int end = 0;
+	vector<thread> threads;
+
+	//for (int i = 0; i < m_nrThreads; i++)
+	//{
+	//	start = i * (n / m_nrThreads);
+	//	end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
+
+	//	//VisvalingamWhyatt(start, end);
+	//	threads.push_back(thread(&SimplificationAlgorithm::CalculateAABBs, this, start, end));
+	//}
+
+	//for (int i = 0; i < m_nrThreads; i++)
+	//	threads[i].join();
+
+	//threads.clear();
+
+	CalculateAABBs(0, m_lines.size());
+
+
+	// Do preprocessing
+	for (int i = 0; i < m_nrThreads; i++)
+	{
+		start = i * (n / m_nrThreads);
+		end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
+
+		//VisvalingamWhyatt(start, end);
+		threads.push_back(thread(&SimplificationAlgorithm::Preprocess, this, start, end));
+	}
+
+	for (int i = 0; i < m_nrThreads; i++)
+		threads[i].join();
+
+	threads.clear();
 
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
 	cout << " Done (" << seconds << "s)" << endl;
@@ -43,7 +79,23 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	cout << "Simplifying... ";
 	partTime = clock();
 
-	VisvalingamWhyatt();
+
+//	m_nrThreads = 4;
+	for (int i = 0; i < m_nrThreads; i++)
+	{
+		start = i * (n / m_nrThreads);
+		end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
+
+		//VisvalingamWhyatt(start, end);
+		threads.push_back(thread(&SimplificationAlgorithm::VisvalingamWhyatt, this, start, end));
+	}
+
+	for (int i = 0; i < m_nrThreads; i++)
+		threads[i].join();
+
+	threads.clear();
+
+	//VisvalingamWhyatt(0, 0);
 	
 	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
 	cout << " Done (" << seconds << "s)" << endl;
@@ -79,25 +131,32 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 
 }
 
-void SimplificationAlgorithm::Preprocess()
+
+void SimplificationAlgorithm::CalculateAABBs(int start, int end)
 {
 	// Calculate AABBs and detect nearby control points
-	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
+	for (std::vector<Line*>::const_iterator l_it = m_lines.begin() + start, l_e = m_lines.begin() + end; l_it < l_e; l_it++)
 	{
 		// Calculate AABB
 		(*l_it)->CalculateAABB();
+	}
+}
 
+
+void SimplificationAlgorithm::Preprocess(int start, int end)
+{
+	// Check AABB overlap to find lines that potentially cause topology errors when simplified
+	for (std::vector<Line*>::const_iterator l1_it = m_lines.begin() + start, l1_e = m_lines.begin() + end; l1_it < l1_e; l1_it++)
+	{
 		// Find control points inside the AABB 
 		// Now O(n^2) could be improved using a sweepline algorithm
 		for (std::vector<glm::vec2>::const_iterator v_it = m_points.begin(), v_e = m_points.end(); v_it < v_e; v_it++)
 		{
-			(*l_it)->AABBContainsControlPoint(*v_it);
+			(*l1_it)->AABBContainsControlPoint(*v_it);
 		}
-	}
 
-	// Check AABB overlap to find lines that potentially cause topology errors when simplified
-	for (std::vector<Line*>::const_iterator l1_it = m_lines.begin(), l1_e = m_lines.end(); l1_it < l1_e; l1_it++)
-	{
+
+		// Find potential overlapping lines
 		for (std::vector<Line*>::const_iterator l2_it = m_lines.begin(), l2_e = m_lines.end(); l2_it < l2_e; l2_it++)
 		{
 			(*l1_it)->AABBIntersectsLineAABB(**l2_it);
@@ -123,7 +182,7 @@ float SimplificationAlgorithm::CalculateArea(const glm::vec2& a, const glm::vec2
 	return area;
 }
 
-void SimplificationAlgorithm::VisvalingamWhyatt()
+void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 {
 	Line* l = nullptr;
 	glm::vec2 v;
@@ -134,7 +193,7 @@ void SimplificationAlgorithm::VisvalingamWhyatt()
 	int count = 0;
 	float minArea = FLT_MAX;
 
-	for (std::vector<Line*>::const_iterator l_it = m_lines.begin(), l_e = m_lines.end(); l_it < l_e; l_it++)
+	for (std::vector<Line*>::const_iterator l_it = m_lines.begin() + start, l_e = m_lines.begin() + end; l_it < l_e; l_it++)
 	{
 		l = *l_it;
 

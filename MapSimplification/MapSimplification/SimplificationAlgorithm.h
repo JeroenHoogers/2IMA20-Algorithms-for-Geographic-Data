@@ -7,6 +7,8 @@
 #include <string>
 #include <ctime>
 #include <iostream>
+#include <thread>
+
 using namespace std;
 
 class SimplificationAlgorithm
@@ -16,10 +18,14 @@ private:
 	vector<glm::vec2> m_points;
 	vector<Line*> m_simplifiedLines;
 
-	void Preprocess();
+	int m_nrThreads;
+
+	void CalculateAABBs(int start, int end);
+	void Preprocess(int start, int end);
+
 	void LoadInput(string inputLines, string inputPoints);
 	float CalculateArea(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c);
-	void VisvalingamWhyatt();
+	void VisvalingamWhyatt(int start, int end);
 
 
 public:
