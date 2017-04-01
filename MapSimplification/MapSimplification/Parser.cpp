@@ -80,11 +80,11 @@ std::vector<glm::vec2> Parser::ParsePointFile(std::string input)
 	return points;
 }
 
-void Parser::WriteOutput(vector<Line*> lines)
+void Parser::WriteOutput(vector<Line*> lines, string output)
 {
 	ofstream lineFile;
 	int count = 1;
-	lineFile.open("Data\\lines_out_output.txt");
+	lineFile.open(output);
 
 	for (std::vector<Line*>::const_iterator l_it = lines.begin(), l_e = lines.end(); l_it < l_e; l_it++)
 	{

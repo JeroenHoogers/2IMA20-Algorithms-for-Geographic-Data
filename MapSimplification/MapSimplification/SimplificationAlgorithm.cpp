@@ -13,126 +13,70 @@ SimplificationAlgorithm::~SimplificationAlgorithm()
 }
 
 
+//-----------------------------------------------------------------------------------------------------------------//
 float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
 {
 	const clock_t beginTime = clock();
 	clock_t partTime = clock();
-
-	// do something
-	float seconds = 0;
+	Parser parser;
 
 	//Parse input files
-	cout << "Parsing Input... ";
-	partTime = clock();
+	cout << "Parsing Input... "; partTime = clock();
+	LoadInput(inputLinesPath, inputPointsPath);			// Load / Parse input files
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
-	LoadInput(inputLinesPath, inputPointsPath);
-	
-	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " Done (" << seconds << "s)" << endl;
-
-	//Calculate AABB's
-	//TODO : Speed up with sweepline
-	cout << "Calculating AABB and detecting nearby control points and lines... ";
-	partTime = clock();
-
+	// do something
 	int n = m_lines.size();
 	int start = 0;
-	int end = 0;
-	vector<thread> threads;
+	int end = m_lines.size();
 
-	//for (int i = 0; i < m_nrThreads; i++)
-	//{
-	//	start = i * (n / m_nrThreads);
-	//	end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
+	//  Calculate AABBs for lines
+	cout << "Calculating AABBs for lines... "; partTime = clock();
+	CalculateAABBs(start, end);							// Run AABB calculation
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
-	//	//VisvalingamWhyatt(start, end);
-	//	threads.push_back(thread(&SimplificationAlgorithm::CalculateAABBs, this, start, end));
-	//}
-
-	//for (int i = 0; i < m_nrThreads; i++)
-	//	threads[i].join();
-
-	//threads.clear();
-
-	CalculateAABBs(0, m_lines.size());
-
-
-	// Do preprocessing
-	for (int i = 0; i < m_nrThreads; i++)
-	{
-		start = i * (n / m_nrThreads);
-		end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
-
-		//VisvalingamWhyatt(start, end);
-		threads.push_back(thread(&SimplificationAlgorithm::Preprocess, this, start, end));
-	}
-
-	for (int i = 0; i < m_nrThreads; i++)
-		threads[i].join();
-
-	threads.clear();
-
-	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " Done (" << seconds << "s)" << endl;
+	// Detect nearby control points and lines using the AABB
+	// TODO : Speed up with sweepline
+	cout << "Detecting nearby control points and lines... "; partTime = clock();
+	Preprocess(start, end);								// Run Preprocessing
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	//Run simplification algorithm VisvalingamWhyatt
-	cout << "Simplifying... ";
-	partTime = clock();
-
-
-//	m_nrThreads = 4;
-	for (int i = 0; i < m_nrThreads; i++)
-	{
-		start = i * (n / m_nrThreads);
-		end = (i == m_nrThreads - 1) ? n : (i + 1) * (n / m_nrThreads);
-
-		//VisvalingamWhyatt(start, end);
-		threads.push_back(thread(&SimplificationAlgorithm::VisvalingamWhyatt, this, start, end));
-	}
-
-	for (int i = 0; i < m_nrThreads; i++)
-		threads[i].join();
-
-	threads.clear();
-
-	//VisvalingamWhyatt(0, 0);
-	
-	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " Done (" << seconds << "s)" << endl;
-
+	cout << "Simplifying... "; partTime = clock();
+	VisvalingamWhyatt(start, end); 						// Run Simplification
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	// Writing output file
-	cout << "Writing output... ";
-	partTime = clock();
-
-	Parser parser;
-	parser.WriteOutput(m_simplifiedLines);
-
-	//TODO : Write output
-	seconds = float(clock() - partTime) / CLOCKS_PER_SEC;
-	cout << " Done (" << seconds << "s)" << endl;
-
+	cout << "Writing output... "; partTime = clock();
+	parser.WriteOutput(m_simplifiedLines, outputPath);	// Write output file
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	// Total time
-	seconds = float(clock() - beginTime) / CLOCKS_PER_SEC;
 	cout << "===========================================================" << endl;
-	cout << "Finished in " << seconds << "s" << endl;
+	cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
 	cout << "===========================================================" << endl;
 
-	//TODO : Calculate grade
+	//TODO : Calculate grade?
 
-	//TODO : Open result
-
-
+	// Open results in OpenGL view
 	MapSimplification mapSimplification(m_lines, m_simplifiedLines, m_points);
 
 	if (mapSimplification.Init())
 		mapSimplification.Run();
 
-	return seconds;
+	return float(clock() - beginTime) / CLOCKS_PER_SEC;
+}
+
+//-----------------------------------------------------------------------------------------------------------------//
+void SimplificationAlgorithm::LoadInput(string inputLines, string inputPoints)
+{
+	Parser parser;
+	m_lines = parser.ParseLineFile(inputLines);
+	m_points = parser.ParsePointFile(inputPoints);
 }
 
 
+//-----------------------------------------------------------------------------------------------------------------//
 void SimplificationAlgorithm::CalculateAABBs(int start, int end)
 {
 	// Calculate AABBs and detect nearby control points
@@ -143,7 +87,7 @@ void SimplificationAlgorithm::CalculateAABBs(int start, int end)
 	}
 }
 
-
+//-----------------------------------------------------------------------------------------------------------------//
 void SimplificationAlgorithm::Preprocess(int start, int end)
 {
 	// Check AABB overlap to find lines that potentially cause topology errors when simplified
@@ -168,21 +112,7 @@ void SimplificationAlgorithm::Preprocess(int start, int end)
 	}
 }
 
-void SimplificationAlgorithm::LoadInput(string inputLines, string inputPoints)
-{
-	Parser parser;
-	m_lines = parser.ParseLineFile(inputLines);
-	m_points = parser.ParsePointFile(inputPoints);
-	
-}
-
-float SimplificationAlgorithm::CalculateArea(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c)
-{
-	//Calculate triangle area for 3 points
-	float area = std::fabs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2;
-	return area;
-}
-
+//-----------------------------------------------------------------------------------------------------------------//
 void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 {
 	Line* l = nullptr;
@@ -242,6 +172,15 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 	}
 }
 
+
+float SimplificationAlgorithm::CalculateArea(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c)
+{
+	//Calculate triangle area for 3 points
+	float area = std::fabs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2;
+	return area;
+}
+
+
 /**
 * Main program execution body, delegates to an instance of the MapSimplification
 * implementation.
@@ -251,16 +190,17 @@ int _tmain(int argc, char* argv[])
 	// TODO: Extract arguments
 	glutInit(&argc, argv);
 	// Check the number of parameters
+	SimplificationAlgorithm simplificationAlgorithm;
 	if (argc < 5) {
 		// Tell the user how to run the program
 		std::cerr << "Usage: " << argv[0] << " <amount_to_remove>" << " <input lines>" << " <input points>" << " <output>" << std::endl;
 		/* "Usage messages" are a conventional way of telling the user
 		* how to run a program if they enter the command incorrectly.
 		*/
-		return 1;
+	//	return 1;
+		return floor(simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt"));
 	}
-	SimplificationAlgorithm simplificationAlgorithm;
-	//return floor(simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt"));
+
 	return simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
 
 	return 0;

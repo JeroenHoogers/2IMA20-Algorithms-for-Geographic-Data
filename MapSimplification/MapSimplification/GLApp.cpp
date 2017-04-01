@@ -252,6 +252,7 @@ void GLApp::InitMenu()
 	glutAddMenuEntry("Show / Hide Endpoints", 1);
 	glutAddMenuEntry("Show / Hide Bounding Boxes", 2);
 	glutAddMenuEntry("Show / Hide Control points", 3);
+	glutAddMenuEntry("Show / Hide Helper points", 4);
 }
 
 
@@ -274,6 +275,10 @@ void GLApp::HandleItemMenuInput(int menuItemNumber)
 
 	case 3: // Show / Hide Control points
 		m_showControlPoints = !m_showControlPoints;
+		break;
+
+	case 4: // Show / Hide Helper points
+		m_showHelperPoints = !m_showHelperPoints;
 		break;
 
 	default:

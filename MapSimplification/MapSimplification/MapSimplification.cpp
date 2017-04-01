@@ -24,6 +24,7 @@ bool MapSimplification::Init()
 	m_showAABBs = false;
 	m_showEndpoints = false;
 	m_showControlPoints = true;
+	m_showHelperPoints = false;
 	// TODO: Initialization
 
 	// Enable blending.
@@ -236,7 +237,8 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 				glEnd();
 			}
 
-			l->DrawHelperPoints();
+			if(m_showHelperPoints)
+				l->DrawHelperPoints();
 
 			if(m_showAABBs)
 				l->DrawAABB();
