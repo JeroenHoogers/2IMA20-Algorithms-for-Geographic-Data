@@ -25,6 +25,7 @@ bool MapSimplification::Init()
 	m_showEndpoints = false;
 	m_showControlPoints = true;
 	m_showHelperPoints = false;
+	m_showLineVertices = false;
 	// TODO: Initialization
 
 	// Enable blending.
@@ -216,15 +217,18 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 			}
 			glEnd();
 
-			//glColor3f(0.8, 0.5, 0.2);
-			//glBegin(GL_POINTS);
-			//for each (glm::vec2 vert in l->verts)
-			//{
-			//	glVertex2f(vert.x, vert.y);
-			//}
-			//glEnd();
+			if (m_showLineVertices)
+			{
+				glColor3f(0.8, 0.5, 0.2);
+				glBegin(GL_POINTS);
+				for each (glm::vec2 vert in l->verts)
+				{
+					glVertex2f(vert.x, vert.y);
+				}
+				glEnd();
 
-			//glColor3f(0.2, 0.2, 0.2);
+				glColor3f(0.2, 0.2, 0.2);
+			}
 
 			// Draw points
 			if (m_showEndpoints)
@@ -239,6 +243,7 @@ void MapSimplification::DrawPanel(const vector<Line*>& lines)
 
 			if(m_showHelperPoints)
 				l->DrawHelperPoints();
+
 
 			if(m_showAABBs)
 				l->DrawAABB();

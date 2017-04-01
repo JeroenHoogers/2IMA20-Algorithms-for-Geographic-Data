@@ -5,6 +5,8 @@
 SimplificationAlgorithm::SimplificationAlgorithm()
 {
 	m_nrThreads = 4;
+	m_nrVerticesRemoved = 0;
+	m_nrVertices = 0;
 }
 
 
@@ -14,8 +16,9 @@ SimplificationAlgorithm::~SimplificationAlgorithm()
 
 
 //-----------------------------------------------------------------------------------------------------------------//
-float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
+void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath)
 {
+	m_nrVerticesToRemove = verticesToRemove;
 	const clock_t beginTime = clock();
 	clock_t partTime = clock();
 	Parser parser;
@@ -36,6 +39,7 @@ float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesP
 	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	// do something
+	std::vector<Line*> OriginalLines = m_lines;
 	int n = m_lines.size();
 	int start = 0;
 	int end = m_lines.size();
@@ -62,20 +66,66 @@ float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesP
 	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	// Total time
+
+	for (std::vector<Line*>::const_iterator l1_it = m_lines.begin(), l1_e = m_lines.end(); l1_it < l1_e; l1_it++)
+	{
+		m_nrVertices += (*l1_it)->verts.size();
+	}
 	// Show vertices removed
 	cout << "===========================================================" << endl;
+	cout << "Amount removed " << m_nrVerticesRemoved << " removed of total " << m_nrVertices << endl;
 	cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
 	cout << "===========================================================" << endl;
 
+	int previouslyRemoved = 0;
+	while (m_nrVerticesRemoved < verticesToRemove && previouslyRemoved < m_nrVerticesRemoved)
+	{
+		previouslyRemoved = m_nrVerticesRemoved;
+		cout << "Amount to remove (" << verticesToRemove << ") not reached" << endl;
+		cout << "===========================================================" << endl;
+		cout << "Run second pass... " << endl;
+		cout << "===========================================================" << endl;
+
+		m_lines = m_simplifiedLines;
+		m_simplifiedLines = vector<Line*>();
+		n = m_lines.size();
+		start = 0;
+		end = m_lines.size();
+
+		//  Calculate AABBs for lines
+		cout << "Calculating AABBs for lines... "; partTime = clock();
+		CalculateAABBs(start, end);							// Run AABB calculation
+		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
+
+		// Detect nearby control points and lines using the AABB
+		// TODO : Speed up with sweepline
+		cout << "Detecting nearby control points and lines... "; partTime = clock();
+		Preprocess(start, end);								// Run Preprocessing
+		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
+
+		//Run simplification algorithm VisvalingamWhyatt
+		cout << "Simplifying... "; partTime = clock();
+		VisvalingamWhyatt(start, end); 						// Run Simplification
+		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
+
+		// Writing output file
+		cout << "Writing output... "; partTime = clock();
+		parser.WriteOutput(m_simplifiedLines, outputPath);	// Write output file
+		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
+
+		// Show vertices removed
+		cout << "===========================================================" << endl;
+		cout << "Amount removed " << m_nrVerticesRemoved << " removed of total " << m_nrVertices << endl;
+		cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
+		cout << "===========================================================" << endl;
+	}
 	//TODO : Calculate grade?
 
 	// Open results in OpenGL view
-	MapSimplification mapSimplification(m_lines, m_simplifiedLines, m_points);
+	MapSimplification mapSimplification(OriginalLines, m_simplifiedLines, m_points);
 
 	if (mapSimplification.Init())
 		mapSimplification.Run();
-
-	return float(clock() - beginTime) / CLOCKS_PER_SEC;
 }
 
 //-----------------------------------------------------------------------------------------------------------------//
@@ -146,15 +196,14 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 		count = 0;
 		bool deletionPossible = true;
 		//Find point to remove from line
-		while (deletionPossible)
+		while (deletionPossible && m_nrVerticesRemoved < m_nrVerticesToRemove)
 		{
-
 			//Calculate minimal effective area
 			minArea = FLT_MAX;
 			
 			indexToRemove = -1;
 			i = 1;
-			for (std::vector<glm::vec2>::const_iterator v_it = simplifiedLine->verts.begin() + 1, v_e = simplifiedLine->verts.end(); v_it < v_e - 1; v_it++) //int i = 2; i < simplifiedLine.verts.size() - 1; i++)
+			for (std::vector<glm::vec2>::const_iterator v_it = simplifiedLine->verts.begin() + 1, v_e = simplifiedLine->verts.end(); v_it < v_e - 1; v_it++)
 			{
 				v = *v_it;
 				v_next = *(v_it + 1);
@@ -173,7 +222,10 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 				i++;
 			}
 			if (indexToRemove >= 0)
-				simplifiedLine->RemoveVertex(indexToRemove);
+			{
+				simplifiedLine->RemoveVertex(indexToRemove); 
+				m_nrVerticesRemoved++;
+			}
 			else
 				deletionPossible = false;
 			count++;
@@ -208,10 +260,10 @@ int _tmain(int argc, char* argv[])
 		* how to run a program if they enter the command incorrectly.
 		*/
 	//	return 1;
-		return floor(simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt"));
+		simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
+		return 1;
 	}
 
-	return simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
-
+	simplificationAlgorithm.Simplify(stoi(argv[1]), argv[2], argv[3], argv[4]);
 	return 0;
 }

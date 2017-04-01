@@ -56,6 +56,7 @@ protected:
 	bool		m_showEndpoints;
 	bool		m_showControlPoints;
 	bool		m_showHelperPoints;
+	bool		m_showLineVertices;
 
 	__int64		m_prevTime;
 	__int64		m_countsPerSec;

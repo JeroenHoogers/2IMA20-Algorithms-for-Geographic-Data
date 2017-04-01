@@ -253,6 +253,7 @@ void GLApp::InitMenu()
 	glutAddMenuEntry("Show / Hide Bounding Boxes", 2);
 	glutAddMenuEntry("Show / Hide Control points", 3);
 	glutAddMenuEntry("Show / Hide Helper points", 4);
+	glutAddMenuEntry("Show / Hide Line vertices", 5);
 }
 
 
@@ -279,6 +280,10 @@ void GLApp::HandleItemMenuInput(int menuItemNumber)
 
 	case 4: // Show / Hide Helper points
 		m_showHelperPoints = !m_showHelperPoints;
+		break;
+
+	case 5: // Show / Hide Line Vertices
+		m_showLineVertices = !m_showLineVertices;
 		break;
 
 	default:

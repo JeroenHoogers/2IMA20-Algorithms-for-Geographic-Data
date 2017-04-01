@@ -19,6 +19,9 @@ private:
 	vector<Line*> m_simplifiedLines;
 
 	int m_nrThreads;
+	int m_nrVertices;
+	int m_nrVerticesRemoved;
+	int m_nrVerticesToRemove;
 
 	void CalculateAABBs(int start, int end);
 	void Preprocess(int start, int end);
@@ -32,5 +35,5 @@ public:
 	SimplificationAlgorithm();
 	~SimplificationAlgorithm();
 
-	float Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath);
+	void Simplify(int verticesToRemove, string inputLinesPath, string inputPointsPath, string outputPath);
 };

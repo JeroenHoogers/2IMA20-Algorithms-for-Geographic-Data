@@ -129,15 +129,49 @@ bool Line::AABBIntersectsLineAABB(const Line& line)
 			std::vector<glm::vec2> polygon = verts;
 			std::reverse(polygon.begin(), polygon.end());
 			polygon.insert(polygon.end(), line.verts.begin() + 1, line.verts.end() - 1);
-			addHelperPoint(polygon);
+			bool needHelper = true;
+			for (std::vector<const glm::vec2*>::const_iterator v_it = m_pNearControlPoints.begin(), v_e = m_pNearControlPoints.end(); v_it < v_e; v_it++)
+			{
+				if (isPointInsidePolygon(**v_it, polygon))
+				{
+					needHelper = false;
+					break;
+				}
+			}
+			for (std::vector<const glm::vec2*>::const_iterator v_it = line.m_pNearControlPoints.begin(), v_e = line.m_pNearControlPoints.end(); v_it < v_e; v_it++)
+			{
+				if (isPointInsidePolygon(**v_it, polygon))
+				{
+					needHelper = false;
+					break;
+				}
+			}
+			if (needHelper)
+				addHelperPoint(polygon);
 		}
 		else if (*u == *line.v && *v == *line.u)
 		{
 			std::vector<glm::vec2> polygon = verts;
-			polygon.insert(polygon.end(), line.verts.begin() + 1, line.verts.end() - 1);
-			addHelperPoint(polygon);
-			//glm::vec2* p = new glm::vec2((*u + *v) * 0.5f);
-			//m_pNearControlPoints.push_back(p);
+			polygon.insert(polygon.end(), line.verts.begin() + 1, line.verts.end() - 1); 
+			bool needHelper = true;
+			for (std::vector<const glm::vec2*>::const_iterator v_it = m_pNearControlPoints.begin(), v_e = m_pNearControlPoints.end(); v_it < v_e; v_it++)
+			{
+				if (isPointInsidePolygon(**v_it, polygon))
+				{
+					needHelper = false;
+					break;
+				}
+			}
+			for (std::vector<const glm::vec2*>::const_iterator v_it = line.m_pNearControlPoints.begin(), v_e = line.m_pNearControlPoints.end(); v_it < v_e; v_it++)
+			{
+				if (isPointInsidePolygon(**v_it, polygon))
+				{
+					needHelper = false;
+					break;
+				}
+			}
+			if (needHelper)
+				addHelperPoint(polygon);
 		}
 	}
 
