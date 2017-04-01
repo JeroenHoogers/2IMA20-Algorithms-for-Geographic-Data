@@ -20,18 +20,19 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 {
 	m_nrVerticesToRemove = verticesToRemove;
 	const clock_t beginTime = clock();
+	clock_t passTime = clock();
 	clock_t partTime = clock();
 	Parser parser;
 
 	// Running algorithm using the following parameters:
 	cout << "===========================================================" << endl;
 	cout << "Running Simplification" << endl;
-	cout << "===========================================================" << endl;
+	cout << "-----------------------------------------------------------" << endl;
 	cout << "<PointsToRemove>:\t" << verticesToRemove << endl;
 	cout << "<LineInputFilePath>:\t" << inputLinesPath << endl;
 	cout << "<PointInputFilePath>:\t" << inputPointsPath << endl;
 	cout << "<OutputFilePath>:\t" << outputPath << endl;
-	cout << "===========================================================" << endl;
+	cout << "-----------------------------------------------------------" << endl;
 
 	//Parse input files
 	cout << "Parsing Input... "; partTime = clock();
@@ -60,11 +61,6 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 	VisvalingamWhyatt(start, end); 						// Run Simplification
 	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
-	// Writing output file
-	cout << "Writing output... "; partTime = clock();
-	parser.WriteOutput(m_simplifiedLines, outputPath);	// Write output file
-	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
-
 	// Total time
 
 	for (std::vector<Line*>::const_iterator l1_it = m_lines.begin(), l1_e = m_lines.end(); l1_it < l1_e; l1_it++)
@@ -72,19 +68,19 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 		m_nrVertices += (*l1_it)->verts.size();
 	}
 	// Show vertices removed
-	cout << "===========================================================" << endl;
-	cout << "Amount removed " << m_nrVerticesRemoved << " removed of total " << m_nrVertices << endl;
-	cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
+	cout << "-----------------------------------------------------------" << endl;
+	cout << "Current pass removed " << m_nrVerticesRemoved << " of total " << m_nrVertices << endl;
+	cout << "Pass finished in " << float(clock() - passTime) / CLOCKS_PER_SEC << "s" << endl;
 	cout << "===========================================================" << endl;
 
 	int previouslyRemoved = 0;
-	while (m_nrVerticesRemoved < verticesToRemove && previouslyRemoved < m_nrVerticesRemoved)
+	while ((m_nrVerticesRemoved < verticesToRemove || verticesToRemove == -1 ) && previouslyRemoved < m_nrVerticesRemoved)
 	{
 		previouslyRemoved = m_nrVerticesRemoved;
-		cout << "Amount to remove (" << verticesToRemove << ") not reached" << endl;
-		cout << "===========================================================" << endl;
-		cout << "Run second pass... " << endl;
-		cout << "===========================================================" << endl;
+		if (verticesToRemove != -1)
+			cout << "Amount to remove (" << verticesToRemove << ") not reached" << endl;
+		cout << "Run next pass... " << endl; passTime = clock();
+		cout << "-----------------------------------------------------------" << endl;
 
 		m_lines = m_simplifiedLines;
 		m_simplifiedLines = vector<Line*>();
@@ -108,17 +104,21 @@ void SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesPa
 		VisvalingamWhyatt(start, end); 						// Run Simplification
 		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
-		// Writing output file
-		cout << "Writing output... "; partTime = clock();
-		parser.WriteOutput(m_simplifiedLines, outputPath);	// Write output file
-		cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
-
-		// Show vertices removed
-		cout << "===========================================================" << endl;
-		cout << "Amount removed " << m_nrVerticesRemoved << " removed of total " << m_nrVertices << endl;
-		cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
+		cout << "-----------------------------------------------------------" << endl;
+		cout << "Current pass removed " << (m_nrVerticesRemoved - previouslyRemoved) << " of total " << m_nrVertices << endl;
+		cout << "Pass finished in " << float(clock() - passTime) / CLOCKS_PER_SEC << "s" << endl;
 		cout << "===========================================================" << endl;
 	}
+	// Writing output file
+	cout << "Writing output... "; partTime = clock();
+	parser.WriteOutput(m_simplifiedLines, outputPath);	// Write output file
+	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
+
+	// Show vertices removed
+	cout << "-----------------------------------------------------------" << endl;
+	cout << "Amount removed " << m_nrVerticesRemoved << " removed of total " << m_nrVertices << endl;
+	cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
+	cout << "===========================================================" << endl;
 	//TODO : Calculate grade?
 
 	// Open results in OpenGL view
@@ -182,7 +182,6 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 	glm::vec2 v_prev;
 	int indexToRemove = 0;
 	int i = 0;
-	int count = 0;
 	float minArea = FLT_MAX;
 
 	for (std::vector<Line*>::const_iterator l_it = m_lines.begin() + start, l_e = m_lines.begin() + end; l_it < l_e; l_it++)
@@ -192,11 +191,10 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 		//Create simplified Line
 		std::vector<glm::vec2> vertices = (*l).verts;
 		Line* simplifiedLine = new Line(l->id, vertices);
-
-		count = 0;
+		
 		bool deletionPossible = true;
 		//Find point to remove from line
-		while (deletionPossible && m_nrVerticesRemoved < m_nrVerticesToRemove)
+		while (deletionPossible && (m_nrVerticesRemoved < m_nrVerticesToRemove || m_nrVerticesToRemove == -1))
 		{
 			//Calculate minimal effective area
 			minArea = FLT_MAX;
@@ -228,7 +226,6 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 			}
 			else
 				deletionPossible = false;
-			count++;
 		}
 		m_simplifiedLines.push_back(simplifiedLine);
 	}
@@ -260,7 +257,7 @@ int _tmain(int argc, char* argv[])
 		* how to run a program if they enter the command incorrectly.
 		*/
 	//	return 1;
-		simplificationAlgorithm.Simplify(5, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
+		simplificationAlgorithm.Simplify(-1, "Data\\training_data5\\lines_out.txt", "Data\\training_data5\\points_out.txt", "output.txt");
 		return 1;
 	}
 
