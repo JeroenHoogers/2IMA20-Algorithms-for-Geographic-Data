@@ -20,6 +20,16 @@ float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesP
 	clock_t partTime = clock();
 	Parser parser;
 
+	// Running algorithm using the following parameters:
+	cout << "===========================================================" << endl;
+	cout << "Running Simplification" << endl;
+	cout << "===========================================================" << endl;
+	cout << "<PointsToRemove>:\t" << verticesToRemove << endl;
+	cout << "<LineInputFilePath>:\t" << inputLinesPath << endl;
+	cout << "<PointInputFilePath>:\t" << inputPointsPath << endl;
+	cout << "<OutputFilePath>:\t" << outputPath << endl;
+	cout << "===========================================================" << endl;
+
 	//Parse input files
 	cout << "Parsing Input... "; partTime = clock();
 	LoadInput(inputLinesPath, inputPointsPath);			// Load / Parse input files
@@ -52,6 +62,7 @@ float SimplificationAlgorithm::Simplify(int verticesToRemove, string inputLinesP
 	cout << " Done (" << float(clock() - partTime) / CLOCKS_PER_SEC << "s)" << endl;
 
 	// Total time
+	// Show vertices removed
 	cout << "===========================================================" << endl;
 	cout << "Finished in " << float(clock() - beginTime) / CLOCKS_PER_SEC << "s" << endl;
 	cout << "===========================================================" << endl;
@@ -148,7 +159,6 @@ void SimplificationAlgorithm::VisvalingamWhyatt(int start, int end)
 				v = *v_it;
 				v_next = *(v_it + 1);
 				v_prev = *(v_it - 1);
-
 
 				//Check if point in Area
 				if (!l->HasPointInTriangle(v_prev, v, v_next) && !l->HasLineInTriangle(v_prev, v, v_next))
